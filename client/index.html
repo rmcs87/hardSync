@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"\>
+	<meta name="viewport" content="width=320, initial-scale=1"/>
+	<title>Coupler tester</title>
+	<!-- http://arunmichaeldsouza.github.io/CSS-Mint/ -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/css-mint/1.4.3/css-mint.min.css">
+	<style>
+	    #op_buttons{
+	   		width: 100%;
+	   		height: 100%; 
+		}
+ 	</style>
+ 	<script src="https://cdn.jsdelivr.net/fingerprintjs2/1.4.1/fingerprint2.min.js"></script>
+ 	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  	<script src="client.js"></script>
+</head>
+<body>
+	<p id="status">OFFLINE</p>
+    <div id="sync-info" class="align-center card info col-span-4">
+    	Does these two videos have an overlaping point?
+    </div>
+    <div class="align-center gr-row">
+	    <div id="video_area">
+			<div id="video1" class="card pricing col-span-2">
+				<div id="video1area">
+					<video id = "v1" width="320" height="240" autoplay loop controls>
+  						<source src="movie.webm" type="video/webm">
+  					</video>
+				</div>
+			</div>
+			<div id="video2" class="card pricing col-span-2">
+				<div id="video2area">
+					<video id = "v2" width="320" height="240" autoplay loop controls>
+  						<source src="movie.webm" type="video/webm">
+  					</video>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="navigation" class="align-center card pricing col-span-4">
+		<button id='b1' class="btn default"> < </button>
+		<button id='f1' class="btn default"> > </button>
+		<button id='b2' class="btn default"> < </button>
+		<button id='f2' class="btn default"> > </button>
+	</div>
+	<div id="logic" class="align-center card pricing col-span-4">
+		<button id='b_confirm' class="btn default">YES, THEY HAVE.</button>
+		<button id='b_negate' class="btn default">NO, THEY DON'T.</button>
+	</div>
+</body>
+</html>
