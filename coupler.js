@@ -5,7 +5,6 @@ var async = require('async');
 var socketio = require('socket.io');
 var express = require('express');
 
-//
 // ## SimpleServer `SimpleServer(obj)`
 //
 // Creates a new instance of SimpleServer with the following options:
@@ -25,6 +24,7 @@ var videos = [   //videos 1 and 2;
         {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
         {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"}
       ];          
+var scores = {};          //Lista com a pontuação dos participantes;
 var nextpair = [];       //lista de prioridades a serem checadas;
 var confirm = [];        //lista que aguarda confirmação;
 var done = false;        //saber se já encontrou todas as relações;
@@ -42,14 +42,12 @@ io.on('connection', function (socket) {
     console.log("Connection estabilished");
     
     if(done){
-      io.send(JSON.stringify( {act:"end"} ));
+      socket.send(JSON.stringify( {act:"end"} ));
     }else{
       console.log("Sent Videos");
-      io.send(JSON.stringify( getNextPair() ));
+      socket.send(JSON.stringify( getNextPair() ));
     }
     
-    //socket.emit("message", JSON.stringify(dal.getPresentation()) );
-    //socket.emit("message", JSON.stringify(dal.getPresentation()) );
     //Adiciona o socket à lista de conexões;
     sockets.push(socket);
     //Quando desconectar
@@ -66,10 +64,16 @@ io.on('connection', function (socket) {
       //transforma a mensagem em um objeto;
       var obj = JSON.parse(msg);
       if(obj.act == "sync"){
+        //Incrementa a pontuação por ter contribuido;
+        addScore(obj.user_id,10);
         //verifica se é uma confirmação
         if(obj.status == "confirm"){
+          //+ 1 por ter encontrado algo;
+          addScore(obj.user_id,1);
           //Como são apenas dois videos, se achar um acabou;
           if(obj.c == "true"){
+            //BINGO
+            addScore(obj.user_id,100);
             dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
             dal.updateAll();
             dal.print();
@@ -97,7 +101,12 @@ io.on('connection', function (socket) {
           nextpair.push([videos[vi].chunk,videos[vj].chunk]);
         }
       }else if (obj.act == "getPresentation") {
-        io.send( JSON.stringify(dal.getPresentation()) );
+        socket.send( JSON.stringify(dal.getPresentation()) );
+      }
+      else if (obj.act == "getScore") {
+        var obj1 = {act:"score", data:scores[obj.user_id]};
+        var c = JSON.stringify(obj1);
+        socket.send(c);
       }
     });
   });
@@ -110,6 +119,15 @@ function getNextPair(){
     var o = nextpair.pop();
     return {id:nextpair.length ,act:"sync", v1_url:videos[0].url ,v2_url:videos[1].url, v1_c:o[0] ,v2_c:o[1], type:"confirm"};
   }
+}
+
+function addScore(user,value){
+  if(scores[user] == null){
+    scores[user] = value;
+  } else{
+    scores[user] += value;
+  }
+  console.log(scores);
 }
 
 server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){

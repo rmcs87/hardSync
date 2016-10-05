@@ -5,7 +5,8 @@ var type;
 var player1 = {};
 var player2 = {};
 var status = "play";
-onload = init;
+var score = 0;
+window.onload = init;
 
 //Start the WS and interface;
 function init(){
@@ -49,6 +50,9 @@ function coupler_message(e){
       loadVideos();
   }else if(obj.act=="end"){
     alert("No More JOBS!!!");
+  }else if(obj.act=="score"){
+    score = obj.data;
+    document.getElementById("status").innerHTML = "ONLINE with ID = " + user_id +" - SCORE =" + score;
   }
 }
 
@@ -131,8 +135,11 @@ function negate(){
 }
 
 function coupler_connect(){
+  var obj1 = {user_id: user_id, act:"getScore"};
+  var c = JSON.stringify(obj1);
+  socket.emit("message",c);
   //Mostra que ta conectado:
-  document.getElementById("status").innerHTML = "ONLINE";
+  document.getElementById("status").innerHTML = "ONLINE with ID = " + user_id +" - SCORE =" + score;
 }
 
 function coupler_close(){
