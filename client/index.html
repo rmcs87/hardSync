@@ -14,6 +14,7 @@
  	</style>
  	<script src="https://cdn.jsdelivr.net/fingerprintjs2/1.4.1/fingerprint2.min.js"></script>
  	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+ 	<script src="/videoPlayer/html5Video.js"></script>
   	<script src="client.js"></script>
 </head>
 <body>
@@ -24,18 +25,10 @@
     <div class="align-center gr-row">
 	    <div id="video_area">
 			<div id="video1" class="card pricing col-span-2">
-				<div id="video1area">
-					<video id = "v1" width="320" height="240" autoplay loop controls>
-  						<source src="movie.webm" type="video/webm">
-  					</video>
+				<div id="v1">
 				</div>
 			</div>
-			<div id="video2" class="card pricing col-span-2">
-				<div id="video2area">
-					<video id = "v2" width="320" height="240" autoplay loop controls>
-  						<source src="movie.webm" type="video/webm">
-  					</video>
-				</div>
+			<div id="v2" class="card pricing col-span-2">
 			</div>
 		</div>
 	</div>

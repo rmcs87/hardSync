@@ -22,8 +22,8 @@ var sockets = [];
 var dal = new d.DLA();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2;
-        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1}
+        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
+        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"}
       ];          
 var nextpair = [];       //lista de prioridades a serem checadas;
 var confirm = [];        //lista que aguarda confirmação;
@@ -34,7 +34,7 @@ var vj = 1;
 
 //Initialize DAL:
 for(var i=0; i<videos.length; i++){
-  dal.addAsset(new d.Asset(videos[i].url,videos[i].url,videos[i].dur));
+  dal.addAsset(new d.Asset(videos[i].full_url,videos[i].url,videos[i].dur));
 }
 
 //Ao conectar;
@@ -60,17 +60,17 @@ io.on('connection', function (socket) {
     });
     //Ao receber a mensagem
     socket.on('message', function (msg) {
-        console.log("");
-        console.log("Recebeu", msg);
-        console.log("");
-        //transforma a mensagem em um objeto;
-        var obj = JSON.parse(msg);
-        if(obj.act == "sync"){
+      console.log("");
+      console.log("Recebeu", msg);
+      console.log("");
+      //transforma a mensagem em um objeto;
+      var obj = JSON.parse(msg);
+      if(obj.act == "sync"){
         //verifica se é uma confirmação
         if(obj.status == "confirm"){
           //Como são apenas dois videos, se achar um acabou;
           if(obj.c == "true"){
-            dal.addContribution(dal.getAsset(obj.v1_url),dal.getAsset(obj.v2_url),obj.delta);
+            dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
             dal.updateAll();
             dal.print();
             done = true;
@@ -96,6 +96,8 @@ io.on('connection', function (socket) {
         }else if(obj.c == "true"){
           nextpair.push([videos[vi].chunk,videos[vj].chunk]);
         }
+      }else if (obj.act == "getPresentation") {
+        io.send( JSON.stringify(dal.getPresentation()) );
       }
     });
   });

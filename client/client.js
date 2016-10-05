@@ -54,16 +54,14 @@ function coupler_message(e){
 
 function loadVideos(){
   //Cria os dois videos e dá o play;  
-  player1.element = document.getElementById("v1");
-  player1.element.src = player1.url +"0"+player1.chunk +".webm";
-  player2.element = document.getElementById("v2");
-  player2.element.src = player2.url +"0"+player2.chunk +".webm";
-  
+  player1.element = new Video({'vidId': 'v1', 'src': player1.url +"0"+player1.chunk +".webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
+  player2.element = new Video({'vidId': 'v2', 'src': player2.url +"0"+player2.chunk +".webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
+
   //Start contribution;
-    player1.element.load();
-    player2.element.load();
-    showvideo();
-    setTimeout(showlogic, 5000);
+  player1.element.load();
+  player2.element.load();
+  showvideo();
+  setTimeout(showlogic, 5000);
 }
 
 function confirm(){
@@ -95,23 +93,23 @@ function initSync(){
 function fwd(event){
   console.log(event)
   if(event.target.id == "f1"){
-    player1.element.currentTime = player1.element.currentTime + 0.25;
+    player1.element.setCurrentTime(player1.element.getCurrentTime() + 0.25);
   }else{
-    player2.element.currentTime = player2.element.currentTime + 0.25;
+    player2.element.setCurrentTime(player2.element.getCurrentTime() + 0.25);
   }
 }
 
 function bwd(event){
   if(event.target.id == "b1"){
-    player1.element.currentTime = player1.element.currentTime - 0.25;
+    player1.element.setCurrentTime(player1.element.getCurrentTime() - 0.25);
   }else{
-    player2.element.currentTime = player2.element.currentTime - 0.25;
+    player2.element.setCurrentTime(player2.element.getCurrentTime() - 0.25);
   }
 }
 
 function confirmSend(){
   //Se ele disser que tem overlap;
-  var delta = (player1.element.currentTime + player1.chunk*5) - (player2.element.currentTime + player2.chunk*5);
+  var delta = (player1.element.getCurrentTime() + player1.chunk*5) - (player2.element.getCurrentTime() + player2.chunk*5);
   var obj1 = {user_id: user_id, id:id, act:"sync", status:type, c:"true", delta:delta, v1_url:player1.url, v2_url:player2.url};
   var c = JSON.stringify(obj1);
   storeContribution(c)
@@ -152,13 +150,13 @@ function showlogic(){
 }
 
 function hidevideo(){
-  document.getElementById("video1area").style.display = "none";
-  document.getElementById("video2area").style.display = "none";
+  document.getElementById("v1").style.display = "none";
+  document.getElementById("v2").style.display = "none";
 }
 
 function showvideo(){
-  document.getElementById("video1area").style.display = "inline";
-  document.getElementById("video2area").style.display = "inline";
+  document.getElementById("v1").style.display = "inline";
+  document.getElementById("v2").style.display = "inline";
 }
 
 function hideNavigation(){

@@ -13,7 +13,7 @@ function showMsg(id,msg){
 function init(){
   //Conecta ao Coupler;
   //ws = new WebSocket( 'ws://10.9.7.127:4080' );
-  socket = io('wss://live-sync-rmcs87.c9users.io/');
+  socket = io('wss://hard-sync-rmcs87.c9users.io/');
   //Se a conexão for perdida:
   //Se a conexão for perdida:
   socket.on("disconnect", coupler_close);
@@ -29,18 +29,19 @@ function coupler_close(){
 }
 //Ao conectar;
 function coupler_connect(){
-
+  var obj1 = {act:"getPresentation"};
+  var c = JSON.stringify(obj1);
+  socket.emit("message",c);
 }
 //Ao receber uma mensagem;
 function coupler_message(e){
   //Se não houver dados na mensagem, cancela;
+  console.log(e);
   if(!e){return;}
   //Transforma a mensagem em um objeto;
   var obj = JSON.parse(e);
   //Se é um objeto contendo os dados de apresentação {act:"presentation",relations:{uri:"",dur:number,delta:number}}
   if(obj.act=="presentation"){
-    console.log("Apresentação: ");
-    console.log(obj.relations);
     video_list = obj.relations;
     //Se há pelo menos um vídeo:
     if(video_list.length > 0){
@@ -51,33 +52,15 @@ function coupler_message(e){
 //Inicia os videos;
 function displayVideos(){
   for(var i=0; i<video_list.length; i++){
-    var newDiv = document.createElement('div');
-    newDiv.id = "player"+i;
-    newDiv.className = "card info col-span-2";
-    document.getElementById("video_area").appendChild(newDiv);   
-    video_players[i] = loadVideo(video_list[i].uri, newDiv.id, video_players[i]);
+    //Cria os dois videos e dá o play;  
+    video_players[i] = new Video({'vidId': 'video_area', 'src': video_list[i].uri, 'width': 300, 'heigth': 300,'autoplay': 1,'loop': 0,'controls': 0});
     video_players[i].addEventListener("onStateChange",videoListener);    
   }
 }
-//Carrega um video do YouTube;
-//vid: id do fluxo do youTube; playerid: id da div para o video;
-function loadVideo(vid,playerid,player){
-  player = new YT.Player(playerid, {
-    height: '200',
-    width: '200',
-    videoId: vid,       // Id do vídeo passado pelo parâmetro.
-    playerVars: {
-    'autoplay':'1',     // Liga o autoplay.
-    'controls':'0',     // Mostra os controles.
-    'enablejsapi':'1',  // Usa a API javascript.
-    'showinfo':'1',     // Esconde as informações de cabeçalho do vídeo.
-    'autohide':'1'      // Esconde os controles automaticamente durante a execução (se 'controls' for '1' ).
-    },
-  });
-  return player;
-}
+
 //Escuta os videos para identificar bufferização e resincronizar;
 function videoListener(event){
+  console.log(event);
   //Se pausou ou esta armazenando buffer;
   if (event.data == 2 || event.data == 3 || event.data == 3){
   //se começou a reproduzir;
@@ -92,8 +75,6 @@ function videoListener(event){
     //se todos estiverem tocando, inicia a sincronização:
     if(allIn){
       console.log("Todos os vídeos estão prontos");
-      //Faz a checagem de BUG do youtube (tempo atual menor ou igual que o último tempo marcado)(apenas para o modo live);
-      //checkYoutubBackInTime();
       //Verifica se é o final do processo de sync, ou se é o final da bufferização de alguém;
       if(flagSyncProc == false){
         console.log("Prontos e não foi uma pausa para sync. Iniciando Sync.");
@@ -149,7 +130,7 @@ function sync(){
   for(var i=0; i<video_players.length; i++){
     if(diffReal[i]!=null){
       var timer = min - diffReal[i];
-      video_players[i].pauseVideo();
+      video_players[i].pause();
       console.log(timer,i);
       doSetTimeout(-timer*1000,i);      
     }
@@ -158,5 +139,5 @@ function sync(){
 }
 //Função para criar um escopo para cada timeOut;
 function doSetTimeout(timer,i) {
-  setTimeout(function(){console.log("play",i,timer); video_players[i].playVideo();}, timer);  
+  setTimeout(function(){console.log("play",i,timer); video_players[i].play();}, timer);  
 }
