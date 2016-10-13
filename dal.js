@@ -65,7 +65,8 @@ function DLA(){
 			return a.getRelation(b).delta;
 		}else{
 			var x = b.getRelation(a).delta;
-			if(x){return -x}else{return x};
+			if(x) return -x;
+			return x;
 		}
 	}
 
@@ -114,40 +115,6 @@ function DLA(){
 		rel.delta = ss.mode(groups[ca]);
 	}
 
-	/*Function to calculate the difference of two assets. We use the Geometric mean:
-		"In mathematics, the geometric mean is a type of mean or average, which indicates
-		the central tendency or typical value of a set of numbers by using the product
-		of their values (as opposed to the arithmetic mean which uses their sum)" (wikipedia)"
-		"http://buzzardsbay.org/geomean.htm"
-		"http://simplestatistics.org/docs/#geometricMean"
-		a,b (Asset): the Assets wich we want the difference.
-		OBS!!!!: essas medias não funcionam com valores negativos, entao no momento é usada a média normal.
-	*/
-	this.updateGeometricMean = function updateGeometricMean(a,b){
-		var rel = this.getRelation(a,b);
-		var vet = new Array();
-		for(var i = 0; i < rel.contributions.length; i++){
-			vet.push(rel.contributions[i].value);
-		}
-		//console.log('S',ss.geometricMean;
-		rel.delta = ss.mean(vet);
-		//rel.delta = ss.geometricMean(vet);
-		//rel.delta=vet[0];
-		//rel.delta = ss.harmonicMean(vet);
-	}
-
-	/*Function to calculate the difference of two assets. This one user average mean.
-		a,b (Asset): the Assets wich we want the difference.
-	*/
-	this.updateAverage = function updateAverage(a,b){
-		var rel = this.getRelation(a,b);
-		var sum = 0;
-		for(var i =0; i < rel.contributions.length; i++){
-			sum += rel.contributions[i].value;
-		}
-		rel.delta = sum/rel.count;
-	}
-
 	/*Function to get a relation */
 	this.getRelation = function getRelation(a,b){
 		var pa = this.assets.indexOf(a);
@@ -161,22 +128,11 @@ function DLA(){
 		return rel;
 	}
 
-	/*Function to update all Deltas of known relations.*/
-	this.updateAll = function updateAll(){
-		for(var i = 0; i < this.assets.length; i++){
-			for(var j = 0; j < this.assets.length; j++){
-				if(this.assets[i].label != this.assets[j].label){
-					this.updateConvergence(this.assets[i],this.assets[j]);
-				}
-			}
-		}
-	}
-
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
-		rel = this.getRelation(a,b);
+		var rel = this.getRelation(a,b);
 		if(rel.delta){
-			dr = rel.delta;
+			var dr = rel.delta;
 			if(rel.frm == b){
 				dr = -dr
 				//console.log(rel.to.label+'->'+rel.frm.label);
@@ -188,7 +144,7 @@ function DLA(){
 		}
 		var rels = a.relations;
 		this.it++;
-		for(i=0; i < rels.length; i++){
+		for(var i=0; i < rels.length; i++){
 			var r = rels[i];
 			if(!r.delta) continue;
 			var d = this.search(r.to,b);
@@ -262,10 +218,10 @@ function DLA(){
 		for(var i = 0; i < this.assets.length; i++){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
-					rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
-					//console.log('Converged: '+rel.converged);
-					//console.log('Infered: '+rel.infered);
-					//console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
+					var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
+					console.log('Converged: '+rel.converged);
+					console.log('Infered: '+rel.infered);
+					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
 				}
 			}
 		}
@@ -302,7 +258,7 @@ function DLA(){
 
 
 	this.countContributions = function countContributions(R){
-		return R.relations.lenght;
+		return R.relations.length;
 	}
 
 	this.chooseNextRelation = function chooseNextRelation(A){
@@ -352,8 +308,8 @@ function DLA(){
 
 	//choose the next pair to distribute and get a contribution
 	this.chooseNextPair = function chooseNextPair(){
-		A = this.chooseNextAsset();
-		R = this.chooseNextRelation(A);
+		var A = this.chooseNextAsset();
+		var R = this.chooseNextRelation(A);
 		return R;
 	}
 
@@ -472,7 +428,7 @@ module.exports.User = User;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/******************************* EXAMPLE **************************************/
+// ****************************** EXAMPLE *********************************** //
 ////////////////////////////////////////////////////////////////////////////////
 /*
 //Creating users who will generate the sugestions
@@ -523,30 +479,20 @@ dla.addContribution(C,D,28,X);
 
 
 //dla.updateAll();
-//dla.print();
+dla.print();
 
 //console.log('------------------- INFERING -----------------');
 
 //Step 1 - Inferir
-//dla.inferUnknown();
+dla.inferUnknown();
 
 //Step 2 - Inferir o que falta a partir dos deltas atualizados
-//dla.inferUnknown();
+dla.inferUnknown();
 
-//dla.print();
+dla.print();
 
-//+dla.chooseNextPair();
-
-//console.log('Next Pair: ['+dla.chooseNextPair().frm+','+dla.chooseNextPair().to+ ']');
-
-
-//console.log(dla);
-
-//dla.updateGeometricMean(A,B);
-//console.log(dla.getDiff(B,A));
-//console.log(dla.getDiff(A,B));
-
-//determining the most probable delta by contributions convergence 
+console.log(dla.chooseNextPair());
 */
+
 
 
