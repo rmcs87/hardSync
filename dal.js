@@ -263,9 +263,9 @@ function DLA(){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
 					rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
-					console.log('Converged: '+rel.converged);
-					console.log('Infered: '+rel.infered);
-					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
+					//console.log('Converged: '+rel.converged);
+					//console.log('Infered: '+rel.infered);
+					//console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
 				}
 			}
 		}
@@ -474,7 +474,7 @@ module.exports.User = User;
 ////////////////////////////////////////////////////////////////////////////////
 /******************************* EXAMPLE **************************************/
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 //Creating users who will generate the sugestions
 var users = new Array();
 users[0] = new User(0, 3);
@@ -523,19 +523,20 @@ dla.addContribution(C,D,28,X);
 
 
 //dla.updateAll();
-dla.print();
+//dla.print();
 
-console.log('------------------- INFERING -----------------');
+//console.log('------------------- INFERING -----------------');
 
 //Step 1 - Inferir
-dla.inferUnknown();
+//dla.inferUnknown();
 
 //Step 2 - Inferir o que falta a partir dos deltas atualizados
-dla.inferUnknown();
+//dla.inferUnknown();
 
-dla.print();
+//dla.print();
 
-+dla.chooseNextPair();
+//+dla.chooseNextPair();
+
 //console.log('Next Pair: ['+dla.chooseNextPair().frm+','+dla.chooseNextPair().to+ ']');
 
 
@@ -546,6 +547,6 @@ dla.print();
 //console.log(dla.getDiff(A,B));
 
 //determining the most probable delta by contributions convergence 
-
+*/
 
 
