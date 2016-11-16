@@ -8,6 +8,10 @@
 //Imports for Node
 var ss = require("./simple-statistics.min.js");
 
+//Defines
+var convergence_threshold = 3;
+var impossible_threshold = 3;
+
 /*contructor for DLA:*/
 function DLA(){
 
@@ -30,7 +34,13 @@ function DLA(){
 		delta (NUMBER): the difference time between a and b;
 	*/
 	this.addContribution = function addContribution(a,b,delta,user){
-		this.getRelation(a,b).add(new Contribution(user,delta));
+		var rel = this.getRelation(a,b);
+		if( delta == 'I'){
+			rel.impossible++;
+		}else{
+			rel.add(new Contribution(user,delta));
+		}
+		this.updateConvergence(a,b);
 	}
 
 	/*Function to recover an Asset
@@ -57,6 +67,51 @@ function DLA(){
 			var x = b.getRelation(a).delta;
 			if(x){return -x}else{return x};
 		}
+	}
+
+
+	// Function to check the convergence of contributions, and update deltas with mode value
+	this.updateConvergence = function updateConvergence(a,b){
+
+		var c = 0;//current(last) slot selected
+		var cc = 0;//convergence consecutive counter
+		var ca = 0;//convergence candidate
+
+		var rel = this.getRelation(a,b);
+		var n = rel.contributions.length;
+		if(n == 0) return new Array();
+
+		for(var vet = new Array(), i = 0; i < rel.contributions.length; vet.push(rel.contributions[i++].value));
+	
+		var max = Math.max.apply(null, vet);
+		var min = Math.min.apply(null, vet);
+		var step = 0.25;//0.1 sec of tolerance
+
+		for(var pos = 0, ini = min, groups = new Array(), counters = new Array(); ini <= max ; ini+=step, pos++, groups.push(new Array()), counters.push(0));
+		
+		for(var i=0; i < vet.length; i++){
+
+			for(var j=0, ini=min+step; ini < vet[i]; ini+=step, j++);
+
+			groups[j].push(vet[i]);
+			counters[j]++;
+	
+	
+			if(j == c){
+				cc++;
+			}else{
+				c = j;
+				cc = 1;
+			}
+
+			if(cc == convergence_threshold){
+				ca = c;
+				rel.converged = true;
+			}
+
+		}	
+
+		rel.delta = ss.mode(groups[ca]);
 	}
 
 	/*Function to calculate the difference of two assets. We use the Geometric mean:
@@ -111,7 +166,7 @@ function DLA(){
 		for(var i = 0; i < this.assets.length; i++){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
-					this.updateGeometricMean(this.assets[i],this.assets[j]);
+					this.updateConvergence(this.assets[i],this.assets[j]);
 				}
 			}
 		}
@@ -124,9 +179,9 @@ function DLA(){
 			dr = rel.delta;
 			if(rel.frm == b){
 				dr = -dr
-				console.log(rel.to.label+'->'+rel.frm.label);
+				//console.log(rel.to.label+'->'+rel.frm.label);
 			}else{
-				console.log(rel.frm.label+'->'+rel.to.label);
+				//console.log(rel.frm.label+'->'+rel.to.label);
 			}
 			this.it=0;
 			return dr;
@@ -144,7 +199,7 @@ function DLA(){
 			if(d){
 				dr = r.delta;
 				if(r.frm == b) dr = -dr
-				console.log(r.frm.label+'->'+r.to.label);
+				//console.log(r.frm.label+'->'+r.to.label);
 				this.it--;
 				return dr + d;
 			}
@@ -152,9 +207,13 @@ function DLA(){
 		return null;
 	}
 
-	/*Function toinfer the unknown Deltas.*/
+	/*Function to infer the unknown Deltas.*/
+	//Procura transitividade entre A e B recursivamente
 	this.inferUnknown = function inferUnknown(){
+	
+
 		//Passo 1 - Iterativo
+
 		//Percorre todos assets, menos o ultimo, pois ele não tem relacoes;
 		for(var i = 0; i < this.assets.length - 1; i++){
 			//Percorre todos assets à direita, menos o último;
@@ -168,29 +227,34 @@ function DLA(){
 						if( ( this.assets[i].relations[k+1].count > 0) && (this.assets[j].relations[k].count == 0) ){
 							//BC = -BA + AC
 							this.assets[j].relations[k].delta = -this.assets[i].relations[j-1-i].delta + this.assets[i].relations[k+j-i].delta;
+
+							var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
+							rel.infered = true;
+
 						}
 					}
 				}
 			}
 		}
-	}
-	//Procura transitividade entre A e B recursivamente
-	this.inferUnknownR = function inferUnknownR(){
+
+
 		//Passo 2 - Recursivo
+
 		for(var i = 0; i < this.assets.length; i++){
-			this.it=0;
+		
 			var rels = this.assets[i].relations;
+			//console.log(rels);
 			for(j=0; j < rels.length; j++){
 				var rel = rels[j];
+				
 				if(!rel.count){
-					console.log('#'+this.assets[i].label+'->'+rel.to.label);
-					d = this.search(rel.frm, rel.to);
-					console.log(d);
-					if(this.it < 1) rel.delta = d;
-					console.log('');
+					//console.log('#'+this.assets[i].label+'->'+rel.to.label);
+					rel.delta = this.search(rel.frm, rel.to);
+					rel.infered = true;
 				}
-			}
+			}		
 		}
+		
 	}
 
 	/*Function to show on console all relations.*/
@@ -198,7 +262,10 @@ function DLA(){
 		for(var i = 0; i < this.assets.length; i++){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
-					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j]));
+					rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
+					console.log('Converged: '+rel.converged);
+					console.log('Infered: '+rel.infered);
+					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
 				}
 			}
 		}
@@ -232,6 +299,67 @@ function DLA(){
 		console.log(pst);
 		return pst;
 	}
+
+
+	this.countContributions = function countContributions(R){
+		return R.relations.lenght;
+	}
+
+	this.chooseNextRelation = function chooseNextRelation(A){
+		var rels = A.relations;
+		var cc=null, ncc=null;//converged and non-converged candidates	
+
+		for(var i=0; i < rels.length; i++){
+			var rel = rels[i];
+
+
+			if( !rel.isPossible() ) continue;
+
+			if( rel.isConverged() ){
+				if(cc == null){
+					cc = rel;
+				}else{
+					if(cc.countContributions > rel.countCountributions){
+						cc = rel;
+					}
+				}
+			}else{
+				if(ncc == null){
+					ncc = rel;
+				}else{
+					if(ncc.countContributions > rel.countCountributions){
+						ncc = rel;
+					}
+	
+				}
+			}
+			
+		}
+
+		if(cc != null) return cc;
+		return ncc;
+	}
+
+	this.chooseNextAsset = function chooseNextAsset(){
+		var l = this.assets.length;
+		var i = Math.floor(Math.random() * l);
+		var A = this.assets[i];
+		if(A.relations.length == 0){
+			return this.chooseNextAsset();
+		}
+		return A;
+	}
+
+	//choose the next pair to distribute and get a contribution
+	this.chooseNextPair = function chooseNextPair(){
+		A = this.chooseNextAsset();
+		R = this.chooseNextRelation(A);
+		return R;
+	}
+
+
+
+
 }
 
 /*contructor for Asset:
@@ -275,6 +403,10 @@ function Relation(frm, to){
 	this.confidence = null;				//the confidence that the delta is correct
 	this.count = 0;								//the number of contributions for this Relation;
 	this.contributions = new Array;	//vector to store contributions for this Relation
+	this.infered = false;
+	this.converged = false;
+	this.impossible = 0;
+
 
 	/*function to add Contributions to a Relation
 		c(Contribution): a contribtuion from an User
@@ -282,6 +414,21 @@ function Relation(frm, to){
 	this.add = function addContribution(c){
 		this.contributions.push(c);
 		this.count++;
+	}
+
+	this.isInfered = function isInfered(){
+		return this.infered;
+	}
+
+	this.isConverged = function isConverged(){
+		return this.converged;
+	}
+
+	this.isPossible = function isPossible(){
+		if(this.impossible < impossible_threshold){
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -315,8 +462,93 @@ function User(id, lvl) {
 	}
 }
 
+
 module.exports.DLA = DLA;
 module.exports.Asset = Asset;
 module.exports.Relation = Relation;
 module.exports.Contribution = Contribution;
 module.exports.User = User;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/******************************* EXAMPLE **************************************/
+////////////////////////////////////////////////////////////////////////////////
+
+//Creating users who will generate the sugestions
+var users = new Array();
+users[0] = new User(0, 3);
+users[1] = new User(1, 5);
+users[2] = new User(2, 7);
+users[3] = new User(3, 1);
+
+var X = users[0];
+var Y = users[1];
+var Z = users[2];
+var W = users[3];
+
+//Creating sub-arrays for videos assuming 4 videos on this test - A, B, C and D
+var dla = new DLA();
+dla.addAsset(new Asset("0.webm","A",10));
+dla.addAsset(new Asset("1.webm","B",15));
+dla.addAsset(new Asset("2.webm","C",23));
+dla.addAsset(new Asset("3.webm","D",2));
+var assets = dla.assets;
+
+var A = dla.getAsset('A');
+var B = dla.getAsset('B');
+var C = dla.getAsset('C');
+var D = dla.getAsset('D');
+
+dla.addContribution(A,B,3,X);
+
+dla.addContribution(B,C,7,X);
+
+dla.addContribution(C,D,11,X);
+dla.addContribution(C,D,11,X);
+dla.addContribution(C,D,13,X);
+dla.addContribution(C,D,12,X);
+
+//I means impossible to relate 
+dla.addContribution(C,D,'I',X);
+
+dla.addContribution(C,D,26,X);
+dla.addContribution(C,D,26,X);
+dla.addContribution(C,D,27,X);
+dla.addContribution(C,D,25.1,X);
+dla.addContribution(C,D,25.2,X);
+dla.addContribution(C,D,25.1,X);
+dla.addContribution(C,D,27,X);
+dla.addContribution(C,D,28,X);
+
+
+//dla.updateAll();
+dla.print();
+
+//console.log('------------------- INFERING -----------------');
+
+//Step 1 - Inferir
+dla.inferUnknown();
+
+//Step 2 - Inferir o que falta a partir dos deltas atualizados
+dla.inferUnknown();
+
+dla.print();
+
+var next = dla.chooseNextPair();
+console.log(next);
+
+
+//console.log('Next Pair: ['+dla.chooseNextPair().frm+','+dla.chooseNextPair().to+ ']');
+
+
+//console.log(dla);
+
+//dla.updateGeometricMean(A,B);
+//console.log(dla.getDiff(B,A));
+//console.log(dla.getDiff(A,B));
+
+//determining the most probable delta by contributions convergence 
+
+
+
