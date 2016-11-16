@@ -75,7 +75,7 @@ io.on('connection', function (socket) {
             //BINGO
             addScore(obj.user_id,100);
             dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
-            dal.updateAll();
+            //dal.updateAll();
             dal.print();
             done = true;
           }else{
