@@ -1,5 +1,5 @@
 /*
-	In this version we are not allowing Hierarchies (Struct DLA from model),
+	In this version we are not allowing Hierarchies (Struct DAL from model),
 	or removihg anything, nor any error Handling is used.
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,14 +12,14 @@ var ss = require("./simple-statistics.min.js");
 var convergence_threshold = 3;
 var impossible_threshold = 3;
 
-/*contructor for DLA:*/
-function DLA(){
+/*contructor for DAL:*/
+function DAL(){
 
 	this.it = 0;
 
 	this.assets = new Array();
 	/*Function to add an Asset:
-		a (Asset): an Asset to be related in this DLA;
+		a (Asset): an Asset to be related in this DAL;
 	*/
 
 	this.addAsset = function addAsset(a){
@@ -114,92 +114,51 @@ function DLA(){
 		rel.delta = ss.mode(groups[ca]);
 	}
 
-	/*Function to calculate the difference of two assets. We use the Geometric mean:
-		"In mathematics, the geometric mean is a type of mean or average, which indicates
-		the central tendency or typical value of a set of numbers by using the product
-		of their values (as opposed to the arithmetic mean which uses their sum)" (wikipedia)"
-		"http://buzzardsbay.org/geomean.htm"
-		"http://simplestatistics.org/docs/#geometricMean"
-		a,b (Asset): the Assets wich we want the difference.
-		OBS!!!!: essas medias não funcionam com valores negativos, entao no momento é usada a média normal.
-	*/
-	this.updateGeometricMean = function updateGeometricMean(a,b){
-		var rel = this.getRelation(a,b);
-		var vet = new Array();
-		for(var i = 0; i < rel.contributions.length; i++){
-			vet.push(rel.contributions[i].value);
-		}
-		//console.log('S',ss.geometricMean;
-		rel.delta = ss.mean(vet);
-		//rel.delta = ss.geometricMean(vet);
-		//rel.delta=vet[0];
-		//rel.delta = ss.harmonicMean(vet);
-	}
-
-	/*Function to calculate the difference of two assets. This one user average mean.
-		a,b (Asset): the Assets wich we want the difference.
-	*/
-	this.updateAverage = function updateAverage(a,b){
-		var rel = this.getRelation(a,b);
-		var sum = 0;
-		for(var i =0; i < rel.contributions.length; i++){
-			sum += rel.contributions[i].value;
-		}
-		rel.delta = sum/rel.count;
-	}
-
 	/*Function to get a relation */
 	this.getRelation = function getRelation(a,b){
 		var pa = this.assets.indexOf(a);
 		var pb = this.assets.indexOf(b);
 		var rel;
 		if(pa < pb){
-			rel = a.getRelation(b);
-		}else{
-			rel = b.getRelation(a);
+			return a.getRelation(b);
 		}
-		return rel;
-	}
-
-	/*Function to update all Deltas of known relations.*/
-	this.updateAll = function updateAll(){
-		for(var i = 0; i < this.assets.length; i++){
-			for(var j = 0; j < this.assets.length; j++){
-				if(this.assets[i].label != this.assets[j].label){
-					this.updateConvergence(this.assets[i],this.assets[j]);
-				}
-			}
-		}
+		return b.getRelation(a);
 	}
 
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
+
+		//Existe relação direta entre A e B
 		rel = this.getRelation(a,b);
 		if(rel.delta){
 			dr = rel.delta;
 			if(rel.frm == b){
 				dr = -dr
-				//console.log(rel.to.label+'->'+rel.frm.label);
-			}else{
-				//console.log(rel.frm.label+'->'+rel.to.label);
 			}
+			//Zera a altura da arvore de recursão
 			this.it=0;
 			return dr;
 		}
+
 		var rels = a.relations;
+
+		//Atualiza a altura da arvore de recursão
 		this.it++;
+
 		for(i=0; i < rels.length; i++){
 			var r = rels[i];
-			if(!r.delta) continue;
-			var d = this.search(r.to,b);
-			if(this.it > this.assets.length){
-				this.it--;
-				return r.delta+d;
+
+			if(!r.delta){
+				continue;
 			}
-			if(d){
+
+			var d = this.search(r.to,b);
+			if(this.it > this.assets.length || d){
+				//Verifica o "sentido" do delta;
 				dr = r.delta;
-				if(r.frm == b) dr = -dr
-				//console.log(r.frm.label+'->'+r.to.label);
+				if(r.frm == b){
+					dr = -dr
+				}
 				this.it--;
 				return dr + d;
 			}
@@ -212,7 +171,7 @@ function DLA(){
 	this.inferUnknown = function inferUnknown(){
 	
 
-		//Passo 1 - Iterativo
+		//Passo 1 - Percorre as contribuições e infere por transitividade tudo que for possivél;
 
 		//Percorre todos assets, menos o ultimo, pois ele não tem relacoes;
 		for(var i = 0; i < this.assets.length - 1; i++){
@@ -238,19 +197,21 @@ function DLA(){
 		}
 
 
-		//Passo 2 - Recursivo
+		//Passo 2 - Percorre os Assets, e quando acha uma lacuna, tenta encontrar um caminha até ela.
 
+		//Percorre os Assets e tenta inferir as lacunas
 		for(var i = 0; i < this.assets.length; i++){
 		
 			var rels = this.assets[i].relations;
-			//console.log(rels);
+			
 			for(j=0; j < rels.length; j++){
 				var rel = rels[j];
 				
 				if(!rel.count){
-					//console.log('#'+this.assets[i].label+'->'+rel.to.label);
 					rel.delta = this.search(rel.frm, rel.to);
-					rel.infered = true;
+					if(rel.delta != null){
+						rel.infered = true;
+					}
 				}
 			}		
 		}
@@ -463,7 +424,7 @@ function User(id, lvl) {
 }
 
 
-module.exports.DLA = DLA;
+module.exports.DAL = DAL;
 module.exports.Asset = Asset;
 module.exports.Relation = Relation;
 module.exports.Contribution = Contribution;
@@ -488,65 +449,64 @@ var Z = users[2];
 var W = users[3];
 
 //Creating sub-arrays for videos assuming 4 videos on this test - A, B, C and D
-var dla = new DLA();
-dla.addAsset(new Asset("0.webm","A",10));
-dla.addAsset(new Asset("1.webm","B",15));
-dla.addAsset(new Asset("2.webm","C",23));
-dla.addAsset(new Asset("3.webm","D",2));
-var assets = dla.assets;
+var dal = new DAL();
+dal.addAsset(new Asset("0.webm","A",10));
+dal.addAsset(new Asset("1.webm","B",15));
+dal.addAsset(new Asset("2.webm","C",23));
+dal.addAsset(new Asset("3.webm","D",2));
+var assets = dal.assets;
 
-var A = dla.getAsset('A');
-var B = dla.getAsset('B');
-var C = dla.getAsset('C');
-var D = dla.getAsset('D');
+var A = dal.getAsset('A');
+var B = dal.getAsset('B');
+var C = dal.getAsset('C');
+var D = dal.getAsset('D');
 
-dla.addContribution(A,B,3,X);
+dal.addContribution(A,B,3,X);
 
-dla.addContribution(B,C,7,X);
+dal.addContribution(B,C,7,X);
 
-dla.addContribution(C,D,11,X);
-dla.addContribution(C,D,11,X);
-dla.addContribution(C,D,13,X);
-dla.addContribution(C,D,12,X);
+dal.addContribution(C,D,11,X);
+dal.addContribution(C,D,11,X);
+dal.addContribution(C,D,13,X);
+dal.addContribution(C,D,12,X);
 
 //I means impossible to relate 
-dla.addContribution(C,D,'I',X);
+dal.addContribution(C,D,'I',X);
 
-dla.addContribution(C,D,26,X);
-dla.addContribution(C,D,26,X);
-dla.addContribution(C,D,27,X);
-dla.addContribution(C,D,25.1,X);
-dla.addContribution(C,D,25.2,X);
-dla.addContribution(C,D,25.1,X);
-dla.addContribution(C,D,27,X);
-dla.addContribution(C,D,28,X);
+dal.addContribution(C,D,26,X);
+dal.addContribution(C,D,26,X);
+dal.addContribution(C,D,27,X);
+dal.addContribution(C,D,25.1,X);
+dal.addContribution(C,D,25.2,X);
+dal.addContribution(C,D,25.1,X);
+dal.addContribution(C,D,27,X);
+dal.addContribution(C,D,28,X);
 
 
-//dla.updateAll();
-dla.print();
+dal.print();
 
 //console.log('------------------- INFERING -----------------');
 
 //Step 1 - Inferir
-dla.inferUnknown();
+dal.inferUnknown();
 
 //Step 2 - Inferir o que falta a partir dos deltas atualizados
-dla.inferUnknown();
+dal.inferUnknown();
 
-dla.print();
+dal.print();
 
-var next = dla.chooseNextPair();
+var next = dal.chooseNextPair();
 console.log(next);
 
 
-//console.log('Next Pair: ['+dla.chooseNextPair().frm+','+dla.chooseNextPair().to+ ']');
+//console.log('Next Pair: ['+dal.chooseNextPair().frm+','+dal.chooseNextPair().to+ ']');
 
 
 //console.log(dla);
 
-//dla.updateGeometricMean(A,B);
-//console.log(dla.getDiff(B,A));
-//console.log(dla.getDiff(A,B));
+//dal.updateGeometricMean(A,B);
+//console.log(dal.getDiff(B,A));
+//console.log(dal.getDiff(A,B));
 
 //determining the most probable delta by contributions convergence 
 
