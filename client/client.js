@@ -15,7 +15,7 @@ function init(){
         this.user_id = result;
     });
     //Coupler IP;
-    socket = io('wss://hard-sync-rmcs87.c9users.io/');
+    socket = io('wss://hardsync-novaes.c9users.io/');
     //Se a conexão for perdida:
     socket.on("disconnect", coupler_close);
     //Ao receber uma mensagem:

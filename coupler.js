@@ -20,9 +20,11 @@ var messages = [];
 var sockets = [];
 var dal = new d.DLA();
 //Variaveis da aplicação
-var videos = [   //videos 1 and 2;
-        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"}
+var videos = [   //videos 1 and 2; (3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
+        {dur: 30, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
+        {dur: 35, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
+        {dur: 30, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
+        {dur: 35, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"}
       ];          
 var scores = {};          //Lista com a pontuação dos participantes;
 var nextpair = [];       //lista de prioridades a serem checadas;
@@ -42,9 +44,18 @@ io.on('connection', function (socket) {
     console.log("Connection estabilished");
     
     if(done){
-      socket.send(JSON.stringify( {act:"end"} ));
+      if(vj < videos.length-1){
+        vi++;
+        vj++;
+        videos[vi].chunk = 1;
+        done = false;
+        console.log("Sent new Videos");
+        socket.send(JSON.stringify( getNextPair() ));
+      }else{
+        socket.send(JSON.stringify( {act:"end"} ));
+      }
     }else{
-      console.log("Sent Videos");
+      console.log("Sent new chunks");
       socket.send(JSON.stringify( getNextPair() ));
     }
     
@@ -66,17 +77,18 @@ io.on('connection', function (socket) {
       if(obj.act == "sync"){
         //Incrementa a pontuação por ter contribuido;
         addScore(obj.user_id,10);
+        
         //verifica se é uma confirmação
         if(obj.status == "confirm"){
+          
           //+ 1 por ter encontrado algo;
           addScore(obj.user_id,1);
-          //Como são apenas dois videos, se achar um acabou;
+
           if(obj.c == "true"){
             //BINGO
             addScore(obj.user_id,100);
             dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
             dal.print();
-            done = true;
           }else{
             //Se não confirmar, remove;
             confirm.splice(obj.id,1);
@@ -97,6 +109,10 @@ io.on('connection', function (socket) {
           }    
         //Se achou, vai para a confirmação:
         }else if(obj.c == "true"){
+          
+          //avisa que houve uma identificacao em um par de chunks, entao vai para o proximo par de videos                
+          done = true;
+
           nextpair.push([videos[vi].chunk,videos[vj].chunk]);
         }
       }else if (obj.act == "getPresentation") {
@@ -110,13 +126,17 @@ io.on('connection', function (socket) {
     });
   });
   
-function getNextPair(){
+function getNextPair(){ 
+  console.log('Vi:'+vi+',Vj:'+vj);
+  console.log('Ci:'+videos[vi].chunk+',Cj:'+videos[vj].chunk);
+  console.log('Done:'+done);
+
   if(nextpair.length == 0){
     count++;
-    return {id:count, act:"sync", v1_url:videos[0].url ,v2_url:videos[1].url, v1_c:videos[0].chunk ,v2_c:videos[1].chunk, type:"new"};
+    return {id:count, act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:videos[vi].chunk ,v2_c:videos[vj].chunk, type:"new"};
   }else{
     var o = nextpair.pop();
-    return {id:nextpair.length ,act:"sync", v1_url:videos[0].url ,v2_url:videos[1].url, v1_c:o[0] ,v2_c:o[1], type:"confirm"};
+    return {id:nextpair.length ,act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:o[vi] ,v2_c:o[vj], type:"confirm"};
   }
 }
 
