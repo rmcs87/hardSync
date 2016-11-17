@@ -1,0 +1,27 @@
+
+
+DAL - Dinamic Aligned List
+
+
+The Dinamic Aligned List - DAL - was designed in order to store efficientilly all relevant contributions that represent a temporal relation between a pair of videos. 
+
+This structure is based on a Upper Triangular Matrix, although, the DAL is contructed on demmand, saving space because don't have any empty slot on it.
+
+Additionally, the DAL is a very usefull structure for algorithms because can be browsed and every position in it contains a not null value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
