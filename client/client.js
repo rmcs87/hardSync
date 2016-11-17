@@ -95,7 +95,6 @@ function initSync(){
 }
 
 function fwd(event){
-  console.log(event)
   if(event.target.id == "f1"){
     player1.element.setCurrentTime(player1.element.getCurrentTime() + 0.25);
   }else{

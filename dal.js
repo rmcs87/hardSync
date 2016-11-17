@@ -257,7 +257,7 @@ function DAL(){
 			vet.push(obj);
 		}
 		var pst = {act:"presentation", relations:vet};
-		console.log(pst);
+		//console.log(pst);
 		return pst;
 	}
 
@@ -436,6 +436,7 @@ function TEST(){
 /******************************* EXAMPLE **************************************/
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 //Creating users who will generate the sugestions
 	var users = new Array();
 	users[0] = new User(0, 3);
@@ -504,6 +505,8 @@ function TEST(){
 
 	//console.log(dla);
 
+//determining the most probable delta by contributions convergence 
+*/
 	//dal.updateGeometricMean(A,B);
 	//console.log(dal.getDiff(B,A));
 	//console.log(dal.getDiff(A,B));

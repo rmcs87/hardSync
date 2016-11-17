@@ -22,12 +22,15 @@ var dal = new d.DAL();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2;
         {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"}
+        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
+        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
+        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}
       ];          
 var scores = {};          //Lista com a pontuação dos participantes;
-var nextpair = [];       //lista de prioridades a serem checadas;
-var confirm = [];        //lista que aguarda confirmação;
-var done = false;        //saber se já encontrou todas as relações;
+var currentPair = {};     //par de ASSETS sendo analisados no momento;
+var nextpair = [];        //lista de prioridades a serem checadas;
+var confirm = [];         //lista que aguarda confirmação;
+var done = false;         //saber se já encontrou todas as relações;
 var count = 0;
 var vi = 0;
 var vj = 1;
@@ -44,7 +47,6 @@ io.on('connection', function (socket) {
     if(done){
       socket.send(JSON.stringify( {act:"end"} ));
     }else{
-      console.log("Sent Videos");
       socket.send(JSON.stringify( getNextPair() ));
     }
     
@@ -76,7 +78,7 @@ io.on('connection', function (socket) {
             addScore(obj.user_id,100);
             dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
             //dal.updateAll();
-            dal.print();
+            //dal.print();
             done = true;
           }else{
             //Se não confirmar, remove;
@@ -112,12 +114,25 @@ io.on('connection', function (socket) {
   });
   
 function getNextPair(){
+  console.log("Proximo Par:");
+  var cp = dal.chooseNextPair();
+  currentPair = [getLocalindex(cp.frm,videos),getLocalindex(cp.to,videos)];  //Indices dos videos no vetor local;
+  console.log(currentPair);
   if(nextpair.length == 0){
     count++;
-    return {id:count, act:"sync", v1_url:videos[0].url ,v2_url:videos[1].url, v1_c:videos[0].chunk ,v2_c:videos[1].chunk, type:"new"};
+    return {id:count, act:"sync", v1_url:videos[currentPair[0]].url ,v2_url:videos[currentPair[1]].url, v1_c:videos[currentPair[0]].chunk ,v2_c:videos[currentPair[1]].chunk, type:"new"};
   }else{
     var o = nextpair.pop();
-    return {id:nextpair.length ,act:"sync", v1_url:videos[0].url ,v2_url:videos[1].url, v1_c:o[0] ,v2_c:o[1], type:"confirm"};
+    return {id:nextpair.length ,act:"sync", v1_url:videos[currentPair[0]].url ,v2_url:videos[currentPair[1]].url, v1_c:o[currentPair[0]] ,v2_c:o[currentPair[1]], type:"confirm"};
+  }
+}
+
+//Retorna o indice daquele asset no vetor local inicial;
+function getLocalindex(asset,v){
+  for(var i=0; i<v.length; i++){
+    if(v[i].url == asset.label){
+      return i;
+    }
   }
 }
 
