@@ -3,6 +3,10 @@
 DAL - Dinamic Aligned List
 
 
+###################################    
+
+INTRODUCTION
+
 The Dinamic Aligned List - DAL - was designed in order to store efficientilly all relevant contributions that represent a temporal relation between a pair of videos. 
 
 This structure is based on a Upper Triangular Matrix, although, the DAL is contructed on demmand, saving space because don't have any empty slot on it.
@@ -12,6 +16,8 @@ Additionally, the DAL is a very usefull structure for algorithms because can be 
 In order to adequate the DAL for a crowdsourced scenario where is necessary proceed verifications about the convergence of contributions, were inserted control information and methods to update and detect the convergence and tendencies among contributions.
 
 Finally, also was inserted inference methods that use transitivity through pairs of aligned videos to calculate relations between videos that don't recieved contributions.
+
+###################################    
 
 STRUCTURE
 
@@ -28,13 +34,36 @@ INFERED is a boolean flag that indicate if the relation recieved user's contribu
 CONVERGED is a booblean flag that indicate if the relation reach the convergence theshold.
 
 IMPOSSIBLE if a controle value used to prevent infinite recursion, it registers the height og the recursion stack when the inference method is searching for transitive path between the relation's video pair. Reaching the Impossible Threshold means that is not possible infer a path between the video pair using the current information set. Aditionally, when an user check a video pair as impossible to relate, this attribute recieve the value 'I'. 
-    
 
+###################################    
 
+LIFECYCLE
 
+In order to identify the contributor, the users are represented as Objects. In this scenario, the class User have only two attibutes, an numeric ID, and a numeric value that indicate the reliability level of the user.
 
+	var user_x = new User(0, 3);
 
+The DAL Lifecycle starts when a DAL object in instanced.
 
+	var dal = new DAL();
+
+Once a DAL object is created, is required to register the videos in it. A video is registered when is created an Asset object for it, and this Asset is added to the DAL instance.
+
+	var A = new Asset("0.webm","A",10);
+	dal.addAsset(A);
+
+	var B = new Asset("1.webm","B",15);
+	dal.addAsset(B);
+
+After register a video is possible to accept contributions relating it with another registered video. This contributions are registered in the video's Asset object.
+
+	dal.addContribution(A,B,3,user_x);
+
+Based in the registered contributions is possible infer other relations by transitivity, using the inference method.
+
+	dal.inferUnknown();
+
+During the tests was possible to notice this method works better when called twice in order to use infered relations to feedback the inference algorithm and find additional relations.
 
 
 
