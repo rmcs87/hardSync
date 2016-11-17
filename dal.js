@@ -431,85 +431,88 @@ module.exports.Contribution = Contribution;
 module.exports.User = User;
 
 
-
+function TEST(){
 ////////////////////////////////////////////////////////////////////////////////
 /******************************* EXAMPLE **************************************/
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
 //Creating users who will generate the sugestions
-var users = new Array();
-users[0] = new User(0, 3);
-users[1] = new User(1, 5);
-users[2] = new User(2, 7);
-users[3] = new User(3, 1);
+	var users = new Array();
+	users[0] = new User(0, 3);
+	users[1] = new User(1, 5);
+	users[2] = new User(2, 7);
+	users[3] = new User(3, 1);
 
-var X = users[0];
-var Y = users[1];
-var Z = users[2];
-var W = users[3];
+	var X = users[0];
+	var Y = users[1];
+	var Z = users[2];
+	var W = users[3];
 
 //Creating sub-arrays for videos assuming 4 videos on this test - A, B, C and D
-var dal = new DAL();
-dal.addAsset(new Asset("0.webm","A",10));
-dal.addAsset(new Asset("1.webm","B",15));
-dal.addAsset(new Asset("2.webm","C",23));
-dal.addAsset(new Asset("3.webm","D",2));
-var assets = dal.assets;
+	var dal = new DAL();
+	dal.addAsset(new Asset("0.webm","A",10));
+	dal.addAsset(new Asset("1.webm","B",15));
+	dal.addAsset(new Asset("2.webm","C",23));
+	dal.addAsset(new Asset("3.webm","D",2));
 
-var A = dal.getAsset('A');
-var B = dal.getAsset('B');
-var C = dal.getAsset('C');
-var D = dal.getAsset('D');
+	var assets = dal.assets;
+	var A = dal.getAsset('A');
+	var B = dal.getAsset('B');
+	var C = dal.getAsset('C');
+	var D = dal.getAsset('D');
 
-dal.addContribution(A,B,3,X);
+	dal.addContribution(A,B,3,X);
 
-dal.addContribution(B,C,7,X);
+	dal.addContribution(B,C,7,X);
 
-dal.addContribution(C,D,11,X);
-dal.addContribution(C,D,11,X);
-dal.addContribution(C,D,13,X);
-dal.addContribution(C,D,12,X);
+	dal.addContribution(C,D,11,X);
+	dal.addContribution(C,D,11,X);
+	dal.addContribution(C,D,13,X);
+	dal.addContribution(C,D,12,X);
 
-//I means impossible to relate 
-dal.addContribution(C,D,'I',X);
+	//I means impossible to relate 
+	dal.addContribution(C,D,'I',X);
 
-dal.addContribution(C,D,26,X);
-dal.addContribution(C,D,26,X);
-dal.addContribution(C,D,27,X);
-dal.addContribution(C,D,25.1,X);
-dal.addContribution(C,D,25.2,X);
-dal.addContribution(C,D,25.1,X);
-dal.addContribution(C,D,27,X);
-dal.addContribution(C,D,28,X);
-
-
-dal.print();
-
-//console.log('------------------- INFERING -----------------');
-
-//Step 1 - Inferir
-dal.inferUnknown();
-
-//Step 2 - Inferir o que falta a partir dos deltas atualizados
-dal.inferUnknown();
-
-dal.print();
-
-var next = dal.chooseNextPair();
-console.log(next);
+	dal.addContribution(C,D,26,X);
+	dal.addContribution(C,D,26,X);
+	dal.addContribution(C,D,27,X);
+	dal.addContribution(C,D,25.1,X);
+	dal.addContribution(C,D,25.2,X);
+	dal.addContribution(C,D,25.1,X);
+	dal.addContribution(C,D,27,X);
+	dal.addContribution(C,D,28,X);
 
 
-//console.log('Next Pair: ['+dal.chooseNextPair().frm+','+dal.chooseNextPair().to+ ']');
+	dal.print();
+
+	//console.log('------------------- INFERING -----------------');
+
+	//Step 1 - Inferir
+	dal.inferUnknown();
+
+	//Step 2 - Inferir o que falta a partir dos deltas atualizados
+	dal.inferUnknown();
+
+	dal.print();
+
+	var next = dal.chooseNextPair();
+	console.log(next);
 
 
-//console.log(dla);
+	//console.log('Next Pair: ['+dal.chooseNextPair().frm+','+dal.chooseNextPair().to+ ']');
 
-//dal.updateGeometricMean(A,B);
-//console.log(dal.getDiff(B,A));
-//console.log(dal.getDiff(A,B));
+
+	//console.log(dla);
 
 //determining the most probable delta by contributions convergence 
 */
+	//dal.updateGeometricMean(A,B);
+	//console.log(dal.getDiff(B,A));
+	//console.log(dal.getDiff(A,B));
 
+	//determining the most probable delta by contributions convergence 
+}
+
+TEST();
 
