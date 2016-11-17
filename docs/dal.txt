@@ -63,11 +63,12 @@ Based in the registered contributions is possible infer other relations by trans
 
 	dal.inferUnknown();
 
-During the tests was possible to notice this method works better when called twice in order to use infered relations to feedback the inference algorithm and find additional relations.
+During the tests was possible to notice this method works better when called twice in order to use infered relations to feedback the inference algorithm and to find additional relations.
 
 
+//CHOOSE NEXT PAIR
 
-
+In certain point of the experiment was noticed that was needed a way to determine wich pair of videos 
 
 
 
