@@ -18,7 +18,7 @@ var d = require("./dal.js");
 router.use(express.static(path.resolve(__dirname, 'client')));
 var messages = [];
 var sockets = [];
-var dal = new d.DLA();
+var dal = new d.DAL();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2;
         {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
