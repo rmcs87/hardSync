@@ -7,10 +7,28 @@ The Dinamic Aligned List - DAL - was designed in order to store efficientilly al
 
 This structure is based on a Upper Triangular Matrix, although, the DAL is contructed on demmand, saving space because don't have any empty slot on it.
 
-Additionally, the DAL is a very usefull structure for algorithms because can be browsed and every position in it contains a not null value.
+Additionally, the DAL is a very usefull structure for algorithms because can be browsed and every position in it contains a not null value, without further verification about it.
 
+In order to adequate the DAL for a crowdsourced scenario where is necessary proceed verifications about the convergence of contributions, were inserted control information and methods to update and detect the convergence and tendencies among contributions.
 
+Finally, also was inserted inference methods that use transitivity through pairs of aligned videos to calculate relations between videos that don't recieved contributions.
 
+STRUCTURE
+
+The DAL is composed by an array of Assets that represent the relations between a video and all the others.
+
+An Asset is composed by an array of Relations, and each Relation describe how the asset's video is related with an other specific video.
+
+A Relation is composed by an array of Contributions, and each Contribution represent a provided delta between a pair of videos and about the user who provided it.
+
+The Relation struct have three control fields, INFERED, CONVERGED and IMPOSSIBLE.
+
+INFERED is a boolean flag that indicate if the relation recieved user's contributions or was infered by transitivity.
+
+CONVERGED is a booblean flag that indicate if the relation reach the convergence theshold.
+
+IMPOSSIBLE if a controle value used to prevent infinite recursion, it registers the height og the recursion stack when the inference method is searching for transitive path between the relation's video pair. Reaching the Impossible Threshold means that is not possible infer a path between the video pair using the current information set. Aditionally, when an user check a video pair as impossible to relate, this attribute recieve the value 'I'. 
+    
 
 
 
