@@ -20,17 +20,16 @@ var messages = [];
 var sockets = [];
 var dal = new d.DAL();
 //Variaveis da aplicação
-var videos = [   //videos 1 and 2;
+var videos = [   //videos 1 and 2; (3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
         {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
         {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
         {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}
+        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
       ];          
 var scores = {};          //Lista com a pontuação dos participantes;
-var currentPair = {};     //par de ASSETS sendo analisados no momento;
-var nextpair = [];        //lista de prioridades a serem checadas;
-var confirm = [];         //lista que aguarda confirmação;
-var done = false;         //saber se já encontrou todas as relações;
+var nextpair = [];       //lista de prioridades a serem checadas;
+var confirm = [];        //lista que aguarda confirmação;
+var done = false;        //saber se já encontrou todas as relações;
 var count = 0;
 var vi = 0;
 var vj = 1;
@@ -45,8 +44,18 @@ io.on('connection', function (socket) {
     console.log("Connection estabilished");
     
     if(done){
-      socket.send(JSON.stringify( {act:"end"} ));
+      if(vj < videos.length-1){
+        vi++;
+        vj++;
+        videos[vi].chunk = 1;
+        done = false;
+        console.log("Sent new Videos");
+        socket.send(JSON.stringify( getNextPair() ));
+      }else{
+        socket.send(JSON.stringify( {act:"end"} ));
+      }
     }else{
+      console.log("Sent new chunks");
       socket.send(JSON.stringify( getNextPair() ));
     }
     
@@ -68,18 +77,18 @@ io.on('connection', function (socket) {
       if(obj.act == "sync"){
         //Incrementa a pontuação por ter contribuido;
         addScore(obj.user_id,10);
+        
         //verifica se é uma confirmação
         if(obj.status == "confirm"){
+          
           //+ 1 por ter encontrado algo;
           addScore(obj.user_id,1);
-          //Como são apenas dois videos, se achar um acabou;
+
           if(obj.c == "true"){
             //BINGO
             addScore(obj.user_id,100);
             dal.addContribution(dal.getAsset(obj.v1_url), dal.getAsset(obj.v2_url), obj.delta);
-            //dal.updateAll();
-            //dal.print();
-            done = true;
+            dal.print();
           }else{
             //Se não confirmar, remove;
             confirm.splice(obj.id,1);
@@ -100,6 +109,10 @@ io.on('connection', function (socket) {
           }    
         //Se achou, vai para a confirmação:
         }else if(obj.c == "true"){
+          
+          //avisa que houve uma identificacao em um par de chunks, entao vai para o proximo par de videos                
+          done = true;
+
           nextpair.push([videos[vi].chunk,videos[vj].chunk]);
         }
       }else if (obj.act == "getPresentation") {
@@ -113,26 +126,17 @@ io.on('connection', function (socket) {
     });
   });
   
-function getNextPair(){
-  console.log("Proximo Par:");
-  var cp = dal.chooseNextPair();
-  currentPair = [getLocalindex(cp.frm,videos),getLocalindex(cp.to,videos)];  //Indices dos videos no vetor local;
-  console.log(currentPair);
+function getNextPair(){ 
+  console.log('Vi:'+vi+',Vj:'+vj);
+  console.log('Ci:'+videos[vi].chunk+',Cj:'+videos[vj].chunk);
+  console.log('Done:'+done);
+
   if(nextpair.length == 0){
     count++;
-    return {id:count, act:"sync", v1_url:videos[currentPair[0]].url ,v2_url:videos[currentPair[1]].url, v1_c:videos[currentPair[0]].chunk ,v2_c:videos[currentPair[1]].chunk, type:"new"};
+    return {id:count, act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:videos[vi].chunk ,v2_c:videos[vj].chunk, type:"new"};
   }else{
     var o = nextpair.pop();
-    return {id:nextpair.length ,act:"sync", v1_url:videos[currentPair[0]].url ,v2_url:videos[currentPair[1]].url, v1_c:o[currentPair[0]] ,v2_c:o[currentPair[1]], type:"confirm"};
-  }
-}
-
-//Retorna o indice daquele asset no vetor local inicial;
-function getLocalindex(asset,v){
-  for(var i=0; i<v.length; i++){
-    if(v[i].url == asset.label){
-      return i;
-    }
+    return {id:nextpair.length ,act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:o[vi] ,v2_c:o[vj], type:"confirm"};
   }
 }
 
@@ -149,3 +153,4 @@ server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){
   var addr = server.address();
   console.log("Server listening at", addr.address + ":" + addr.port);
 });
+

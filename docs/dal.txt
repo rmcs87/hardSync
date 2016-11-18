@@ -68,7 +68,7 @@ During the tests was possible to notice this method works better when called twi
 
 //CHOOSE NEXT PAIR
 
-In certain point of the experiment was noticed that was needed a way to determine wich pair of videos 
+In certain point of the experiment was noticed that was needed a way to determine for wich pairs of videos 
 
 
 
