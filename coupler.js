@@ -38,11 +38,12 @@ var vj = 1;
 //Initialize DAL:
 for(var i=0; i<videos.length; i++){
   dal.addAsset(new d.Asset(videos[i].full_url,videos[i].url,videos[i].dur));
-  vChunks[i] = new Array(videos[i].chuncks);
-  for(var c=1; c <= videos[i].chuncks; c++){
+  vChunks[i] = new Array(videos[i].chuncks +1);
+  for(var c=0; c <= videos[i].chuncks; c++){
     vChunks[i][c] = c;
   }
-  shuffle(vChunks[i])
+  shuffle(vChunks[i]);
+  console.log(vChunks[i]);
 }
 
 
@@ -163,15 +164,15 @@ server.listen(process.env.PORT || 3000, process.env.IP || "0.0.0.0", function(){
   console.log("Server listening at", addr.address + ":" + addr.port);
 });
 
-//Random Shuffling An Array the Fisher-Yates (aka Knuth) Way
+//Random Shuffling An Array for the Knuth method
 function shuffle(array) {
-  var currentIndex = array.length, temporaryValue, randomIndex ;
+  var currentIndex = array.length-1, temporaryValue, randomIndex ;
 
   // While there remain elements to shuffle... (chunk arrays start in 1)
   while (currentIndex > 1) {
 
     // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
+    randomIndex = Math.ceil(Math.random() * currentIndex);
     currentIndex -= 1;
 
     // And swap it with the current element.
