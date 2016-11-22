@@ -46,18 +46,19 @@ for(var i=0; i<videos.length; i++){
   console.log(vChunks[i]);
 }
 
-
-
+//Escolhendo videos iniciais
+var next = dal.chooseNextPair();
+vi = getVideoIndex(next.frm.label);
+vj = getVideoIndex(next.to.label);
+videos[vi].chunk = 1;    
+videos[vj].chunk = 1;
 
 //Ao conectar;
 io.on('connection', function (socket) {
     console.log("Connection estabilished");
     
     if(done){
-      if(vj < videos.length-1){
-        vi++;
-        vj++;
-        videos[vi].chunk = 1;
+      if(vi < vj){ //Quando acabam os vídeos, o chhoseNextPair envia Vi==Vj==-1
         done = false;
         console.log("Sent new Videos");
         socket.send(JSON.stringify( getNextPair() ));
@@ -120,7 +121,8 @@ io.on('connection', function (socket) {
         //Se achou, vai para a confirmação:
         }else if(obj.c == "true"){
           
-          //avisa que houve uma identificacao em um par de chunks, entao vai para o proximo par de videos                
+          //avisa que houve uma identificacao em um par de chunks, entao vai para o proximo par de videos    
+          //COMENTE para continuar recebendo controbuicoes para aquele par de videos
           done = true;
 
           nextpair.push([videos[vi].chunk,videos[vj].chunk]);
@@ -145,9 +147,25 @@ function getNextPair(){
     count++;
     return {id:count, act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:vChunks[vi][videos[vi].chunk] ,v2_c:vChunks[vj][videos[vj].chunk], type:"new"};
   }else{
-    var o = nextpair.pop();
-    return {id:nextpair.length ,act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:o[vi] ,v2_c:o[vj], type:"confirm"};
+    var next = dal.chooseNextPair();
+    vi = getVideoIndex(next.frm.label);
+    vj = getVideoIndex(next.to.label);
+    videos[vi].chunk = 1;    
+    videos[vj].chunk = 1;
+    console.log(vi+':'+vChunks[vi][videos[vi].chunk] );
+    console.log(vj+':'+vChunks[vj][videos[vj].chunk] );
+    return {id:nextpair.length ,act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:vChunks[vi][videos[vi].chunk] ,v2_c:vChunks[vj][videos[vj].chunk], type:"confirm"};
   }
+}
+
+//Retorna o indice do vídeos, utilizado para relacionar com o vetor de chunks aleatorios
+function getVideoIndex(url){
+  for(var i=0; i < videos.length; i++){
+    if(url == videos[i].url){
+      return i;
+    }
+  }
+  return -1;
 }
 
 function addScore(user,value){

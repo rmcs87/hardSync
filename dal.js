@@ -41,6 +41,9 @@ function DAL(){
 			rel.add(new Contribution(user,delta));
 		}
 		this.updateConvergence(a,b);
+		this.clearInference();
+		this.inferUnknown();			
+		this.inferUnknown();	
 	}
 
 	/*Function to recover an Asset
@@ -129,9 +132,9 @@ function DAL(){
 	this.search = function search(a,b){
 
 		//Existe relação direta entre A e B
-		rel = this.getRelation(a,b);
+		var rel = this.getRelation(a,b);
 		if(rel.delta){
-			dr = rel.delta;
+			var dr = rel.delta;
 			if(rel.frm == b){
 				dr = -dr
 			}
@@ -145,7 +148,7 @@ function DAL(){
 		//Atualiza a altura da arvore de recursão
 		this.it++;
 
-		for(i=0; i < rels.length; i++){
+		for(var i=0; i < rels.length; i++){
 			var r = rels[i];
 
 			if(!r.delta){
@@ -166,11 +169,24 @@ function DAL(){
 		return null;
 	}
 
+	this.clearInference = function clearInference(){
+		for(var i = 0; i < this.assets.length; i++){
+			for(var j = i; j < this.assets.length; j++){
+				var rel = this.assets[i].relations[j];
+				if(!rel)continue;
+				if(rel.infered){
+					this.assets[i].relations[j] = new Relation(rel.frm,rel.to);
+				}
+			}
+		}
+	}
+
+
+
 	/*Function to infer the unknown Deltas.*/
 	//Procura transitividade entre A e B recursivamente
 	this.inferUnknown = function inferUnknown(){
 	
-
 		//Passo 1 - Percorre as contribuições e infere por transitividade tudo que for possivél;
 
 		//Percorre todos assets, menos o ultimo, pois ele não tem relacoes;
@@ -178,6 +194,7 @@ function DAL(){
 			//Percorre todos assets à direita, menos o último;
 			for(var j = i+1; j < this.assets.length - 1; j++){
 				var rel = this.assets[i].relations[j-i-1];
+				
 				//Se ha relação entre Ai e Aj;
 				if(rel.count > 0){
 					//Percorre todas contribuições para ver se tem algo que Ai sabe e Aj não;
@@ -223,7 +240,7 @@ function DAL(){
 		for(var i = 0; i < this.assets.length; i++){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
-					rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
+					var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
 					console.log('Converged: '+rel.converged);
 					console.log('Infered: '+rel.infered);
 					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
@@ -263,7 +280,7 @@ function DAL(){
 
 
 	this.countContributions = function countContributions(R){
-		return R.relations.lenght;
+		return R.relations.length;
 	}
 
 	this.chooseNextRelation = function chooseNextRelation(A){
@@ -313,8 +330,8 @@ function DAL(){
 
 	//choose the next pair to distribute and get a contribution
 	this.chooseNextPair = function chooseNextPair(){
-		A = this.chooseNextAsset();
-		R = this.chooseNextRelation(A);
+		var A = this.chooseNextAsset();
+		var R = this.chooseNextRelation(A);
 		return R;
 	}
 
@@ -462,13 +479,19 @@ function TEST(){
 	var D = dal.getAsset('D');
 
 	dal.addContribution(A,B,3,X);
-
 	dal.addContribution(B,C,7,X);
+	dal.addContribution(C,D,11,X);
 
-	dal.addContribution(C,D,11,X);
-	dal.addContribution(C,D,11,X);
+	dal.print();
+	console.log('-----------');
+	
 	dal.addContribution(C,D,13,X);
-	dal.addContribution(C,D,12,X);
+	dal.addContribution(C,D,13,X);
+	dal.addContribution(C,D,13,X);
+
+
+	dal.print();
+	console.log('-----------');
 
 	//I means impossible to relate 
 	dal.addContribution(C,D,'I',X);
@@ -482,18 +505,17 @@ function TEST(){
 	dal.addContribution(C,D,27,X);
 	dal.addContribution(C,D,28,X);
 
-
 	dal.print();
 
 	//console.log('------------------- INFERING -----------------');
 
 	//Step 1 - Inferir
-	dal.inferUnknown();
+	//dal.inferUnknown();
 
 	//Step 2 - Inferir o que falta a partir dos deltas atualizados
-	dal.inferUnknown();
+	//dal.inferUnknown();
 
-	dal.print();
+	//dal.print();
 
 	var next = dal.chooseNextPair();
 	console.log(next);
@@ -513,5 +535,5 @@ function TEST(){
 	//determining the most probable delta by contributions convergence 
 }
 
-TEST();
+//TEST();
 
