@@ -20,11 +20,11 @@ var messages = [];
 var sockets = [];
 var dal = new d.DAL();
 //Variaveis da aplicação
-var videos = [   //videos 1 and 2; (3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
-        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
-        {dur: 30, chuncks:6, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
-        {dur: 35, chuncks:7, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
+var videos = [   //videos 1 and 2; ([6/7]  3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
+        {dur: 30, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
+        {dur: 35, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
+        {dur: 30, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
+        {dur: 35, chuncks:2, url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
       ];        
 var vChunks = new Array(); //random order of chunks in Videos
 var scores = {};          //Lista com a pontuação dos participantes;
@@ -59,7 +59,6 @@ io.on('connection', function (socket) {
     
     if(done){
       if(vi < vj){ //Quando acabam os vídeos, o chhoseNextPair envia Vi==Vj==-1
-        done = false;
         console.log("Sent new Videos");
         socket.send(JSON.stringify( getNextPair() ));
       }else{
@@ -116,6 +115,8 @@ io.on('connection', function (socket) {
           }
           //Se video "j" chego uao ultimo chunck, não achou nada :(
           if(videos[vj].chunk > videos[vj].chuncks){
+            //Envia 'I' no lugar do delta para dizer que é Impossivel achar um overlap entre os videos
+            dal.addContribution(dal.getAsset(videos[vi].url), dal.getAsset(videos[vj].url), 'I');
             done = true;
           }    
         //Se achou, vai para a confirmação:
@@ -143,15 +144,20 @@ function getNextPair(){
   console.log('Ci:'+videos[vi].chunk+'('+vChunks[vi][videos[vi].chunk]+'),Cj:'+videos[vj].chunk+'('+ vChunks[vj][videos[vj].chunk]+ ')');
   console.log('Done:'+done);
 
-  if(nextpair.length == 0){
+  if(!done){
+    //No caso de identificação negativa apenas se atualiza os chunks
     count++;
     return {id:count, act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:vChunks[vi][videos[vi].chunk] ,v2_c:vChunks[vj][videos[vj].chunk], type:"new"};
   }else{
+    
+    //Atualizando o par de videos
+    done = false;
     var next = dal.chooseNextPair();
     vi = getVideoIndex(next.frm.label);
     vj = getVideoIndex(next.to.label);
     videos[vi].chunk = 1;    
     videos[vj].chunk = 1;
+    console.log("Novos Videos");
     console.log(vi+':'+vChunks[vi][videos[vi].chunk] );
     console.log(vj+':'+vChunks[vj][videos[vj].chunk] );
     return {id:nextpair.length ,act:"sync", v1_url:videos[vi].url ,v2_url:videos[vj].url, v1_c:vChunks[vi][videos[vi].chunk] ,v2_c:vChunks[vj][videos[vj].chunk], type:"confirm"};

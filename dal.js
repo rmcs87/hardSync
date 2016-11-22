@@ -34,6 +34,8 @@ function DAL(){
 		delta (NUMBER): the difference time between a and b;
 	*/
 	this.addContribution = function addContribution(a,b,delta,user){
+		console.log(a);
+		console.log(b);
 		var rel = this.getRelation(a,b);
 		if( delta == 'I'){
 			rel.impossible++;
