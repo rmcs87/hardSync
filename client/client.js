@@ -123,8 +123,9 @@ function confirmSend(){
 }
 
 function negate(){
-  //Se ele disser que tem overlap;
-  var obj1 = {user_id: user_id, id:id, act:"sync", status:type, c:"false"};
+  //Se ele disser que NÃO tem overlap;
+  var obj1 = {user_id: user_id, id:id, act:"sync", status:"negate", c:"false"};
+  //var obj1 = {user_id: user_id, id:id, act:"sync", status:type, c:"false"};
   var c = JSON.stringify(obj1);
   storeContribution(c)
   socket.emit("message",c);

@@ -34,9 +34,12 @@ function DAL(){
 		delta (NUMBER): the difference time between a and b;
 	*/
 	this.addContribution = function addContribution(a,b,delta,user){
-		console.log(a);
-		console.log(b);
+		//console.log(a);
+		//console.log(b);
 		var rel = this.getRelation(a,b);
+		
+		rel.infered = false;
+		
 		if( delta == 'I'){
 			rel.impossible++;
 		}else{
@@ -285,6 +288,8 @@ function DAL(){
 		return R.relations.length;
 	}
 
+
+	//Prioridade: 1. Quase convergindo, 2. Não convergido, 3. Convergido.
 	this.chooseNextRelation = function chooseNextRelation(A){
 		var rels = A.relations;
 		var cc=null, ncc=null;//converged and non-converged candidates	
@@ -293,52 +298,73 @@ function DAL(){
 			var rel = rels[i];
 
 
+		console.log('Candidate ('+rel.contributions.length+':'+rel.count+':'+rel.converged+') : '+rel.frm.label+' <-> '+rel.to.label);
+		
+			//Se a relação é marcada como impossivel, passa para a proxima
 			if( !rel.isPossible() ) continue;
 
-			if( rel.isConverged() ){
+			if(rel.isConverged()){
 				if(cc == null){
 					cc = rel;
 				}else{
+					//Menor convergenvia tem prioridade
 					if(cc.countContributions > rel.countCountributions){
 						cc = rel;
 					}
-				}
+				}	
 			}else{
+
 				if(ncc == null){
 					ncc = rel;
 				}else{
+					//Prioridade para quem já está quase convergindo
 					if(ncc.countContributions > rel.countCountributions){
 						ncc = rel;
 					}
-	
 				}
 			}
-			
 		}
 
-		if(cc != null) return cc;
+		//Somente retorna um par que ja convergiu caso
+		//não houverem mais pares que ainda não convergiram
+		if(ncc == null) return cc;
+		
 		return ncc;
 	}
+	
+	
+	
 
 	this.chooseNextAsset = function chooseNextAsset(){
-		var l = this.assets.length;
+		var l = this.assets.length -1; //a ponta inferior da Matriz Triangular Superior.
 		var i = Math.floor(Math.random() * l);
+		//while(!this.assets[i].isConverged()){
+		//	var i = Math.floor(Math.random() * l);
+		//}
 		var A = this.assets[i];
-		if(A.relations.length == 0){
-			return this.chooseNextAsset();
-		}
 		return A;
 	}
 
 	//choose the next pair to distribute and get a contribution
-	this.chooseNextPair = function chooseNextPair(){
+	this.chooseNextPair = function chooseNextPair(user_id){
+		console.log('USER ID: '+user_id);
 		var A = this.chooseNextAsset();
 		var R = this.chooseNextRelation(A);
+		console.log('Asset: '+A.label);
+		console.log('Relation: '+R.frm.label+' <-> '+R.to.label);
 		return R;
 	}
 
 
-
+	//Se todos os Assets já convergiram, a DAL tb convergiu
+	this.isConverged = function isConverged(){
+		for(var i=0; i<this.assets.length-1; i++){
+			if(this.assets[i].isConverged()){
+				return false;
+			}
+		}
+		return true;
+	}
 
 }
 
@@ -369,6 +395,17 @@ function Asset(uri,label,dur){
 				}
 			}
 	}
+	
+	//Se todas as Relations já convergiram, o Asset tb convergiu
+	this.isConverged = function isConverged(){
+		for(var i=0; i<this.relations.length; i++){
+			if(this.relations[i].isConverged()){
+				return false;
+			}
+		}
+		return true;
+	}
+
 }
 
 
@@ -392,6 +429,7 @@ function Relation(frm, to){
 		c(Contribution): a contribtuion from an User
 	*/
 	this.add = function addContribution(c){
+		//console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label);
 		this.contributions.push(c);
 		this.count++;
 	}
@@ -450,92 +488,4 @@ module.exports.Contribution = Contribution;
 module.exports.User = User;
 
 
-function TEST(){
-////////////////////////////////////////////////////////////////////////////////
-/******************************* EXAMPLE **************************************/
-////////////////////////////////////////////////////////////////////////////////
-
-//Creating users who will generate the sugestions
-	var users = new Array();
-	users[0] = new User(0, 3);
-	users[1] = new User(1, 5);
-	users[2] = new User(2, 7);
-	users[3] = new User(3, 1);
-
-	var X = users[0];
-	var Y = users[1];
-	var Z = users[2];
-	var W = users[3];
-
-//Creating sub-arrays for videos assuming 4 videos on this test - A, B, C and D
-	var dal = new DAL();
-	dal.addAsset(new Asset("0.webm","A",10));
-	dal.addAsset(new Asset("1.webm","B",15));
-	dal.addAsset(new Asset("2.webm","C",23));
-	dal.addAsset(new Asset("3.webm","D",2));
-
-	var assets = dal.assets;
-	var A = dal.getAsset('A');
-	var B = dal.getAsset('B');
-	var C = dal.getAsset('C');
-	var D = dal.getAsset('D');
-
-	dal.addContribution(A,B,3,X);
-	dal.addContribution(B,C,7,X);
-	dal.addContribution(C,D,11,X);
-
-	dal.print();
-	console.log('-----------');
-	
-	dal.addContribution(C,D,13,X);
-	dal.addContribution(C,D,13,X);
-	dal.addContribution(C,D,13,X);
-
-
-	dal.print();
-	console.log('-----------');
-
-	//I means impossible to relate 
-	dal.addContribution(C,D,'I',X);
-
-	dal.addContribution(C,D,26,X);
-	dal.addContribution(C,D,26,X);
-	dal.addContribution(C,D,27,X);
-	dal.addContribution(C,D,25.1,X);
-	dal.addContribution(C,D,25.2,X);
-	dal.addContribution(C,D,25.1,X);
-	dal.addContribution(C,D,27,X);
-	dal.addContribution(C,D,28,X);
-
-	dal.print();
-
-	//console.log('------------------- INFERING -----------------');
-
-	//Step 1 - Inferir
-	//dal.inferUnknown();
-
-	//Step 2 - Inferir o que falta a partir dos deltas atualizados
-	//dal.inferUnknown();
-
-	//dal.print();
-
-	var next = dal.chooseNextPair();
-	console.log(next);
-
-
-	//console.log('Next Pair: ['+dal.chooseNextPair().frm+','+dal.chooseNextPair().to+ ']');
-
-
-	//console.log(dla);
-
-	//determining the most probable delta by contributions convergence 
-
-	//dal.updateGeometricMean(A,B);
-	//console.log(dal.getDiff(B,A));
-	//console.log(dal.getDiff(A,B));
-
-	//determining the most probable delta by contributions convergence 
-}
-
-//TEST();
 
