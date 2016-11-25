@@ -9,8 +9,8 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 3;
-var impossible_threshold = 3;
+var convergence_threshold = 1;
+var impossible_threshold = 1;
 
 /*contructor for DAL:*/
 function DAL(){
@@ -423,7 +423,7 @@ function Asset(uri,label,dur){
 	//Se todas as Relations já convergiram, o Asset tb convergiu
 	this.isConverged = function isConverged(){
 		for(var i=0; i<this.relations.length; i++){
-			if(!this.relations[i].isConverged() && !this.relations[i].isInfered()){
+			if(!this.relations[i].isConverged() && !this.relations[i].isInfered() && this.relations[i].isPossible()){
 				return false;
 			}
 		}
