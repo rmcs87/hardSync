@@ -138,7 +138,7 @@ function DAL(){
 
 		//Existe relação direta entre A e B
 		var rel = this.getRelation(a,b);
-		if(rel.delta){
+		if(rel.delta != null){
 			var dr = rel.delta;
 			if(rel.frm == b){
 				dr = -dr
@@ -423,7 +423,7 @@ function Asset(uri,label,dur){
 	//Se todas as Relations já convergiram, o Asset tb convergiu
 	this.isConverged = function isConverged(){
 		for(var i=0; i<this.relations.length; i++){
-			if(!this.relations[i].isConverged()){
+			if(!this.relations[i].isConverged() && !this.relations[i].isInfered()){
 				return false;
 			}
 		}
