@@ -156,7 +156,7 @@ function DAL(){
 		for(var i=0; i < rels.length; i++){
 			var r = rels[i];
 
-			if(!r.delta){
+			if(r.delta == null){
 				continue;
 			}
 
@@ -180,6 +180,7 @@ function DAL(){
 				var rel = this.assets[i].relations[j];
 				if(!rel)continue;
 				if(rel.infered){
+					console.log('Deleting Inference: '+rel.frm.label+' <-> '+rel.to.label);
 					this.assets[i].relations[j] = new Relation(rel.frm,rel.to);
 				}
 			}
@@ -229,7 +230,7 @@ function DAL(){
 			for(j=0; j < rels.length; j++){
 				var rel = rels[j];
 				
-				if(!rel.count){
+				if(rel.count == 0){
 					rel.delta = this.search(rel.frm, rel.to);
 					if(rel.delta != null){
 						rel.infered = true;
@@ -298,7 +299,7 @@ function DAL(){
 			var rel = rels[i];
 
 
-		console.log('Candidate ('+rel.contributions.length+':'+rel.count+':'+rel.converged+') : '+rel.frm.label+' <-> '+rel.to.label);
+		console.log('Candidate ('+rel.count+':'+rel.converged+')');// : '+rel.frm.label+' <-> '+rel.to.label);
 		
 			//Se a relação é marcada como impossivel, passa para a proxima
 			if( !rel.isPossible() ) continue;
@@ -336,19 +337,40 @@ function DAL(){
 	
 
 	this.chooseNextAsset = function chooseNextAsset(){
-		var l = this.assets.length -1; //a ponta inferior da Matriz Triangular Superior.
-		var i = Math.floor(Math.random() * l);
-		//while(!this.assets[i].isConverged()){
-		//	var i = Math.floor(Math.random() * l);
-		//}
-		var A = this.assets[i];
-		return A;
+		var l = this.assets.length; 
+		
+		//a ponta inferior da Matriz Triangular Superior, por isso ' < l' .
+		//Seleciona apenas os Assets que ainda não convergiram
+		var candidates = new Array();
+		for(var a=0; a<l; a++){
+			if(!this.assets[a].isConverged()){
+				candidates.push(a);
+			}
+		}
+	
+		console.log(candidates);
+		
+		l = candidates.length;
+		if(l >= 0){
+			//Retorna um Asset aleatório entre os que ainda não convergiram
+			a = Math.floor(Math.random() * l);
+			console.log('Choosen: '+candidates[a]);
+			return this.assets[candidates[a]];
+		}
+
+		//Se não houverem mais pares não-convergidos, retorna null
+		return null;
+	
 	}
 
 	//choose the next pair to distribute and get a contribution
 	this.chooseNextPair = function chooseNextPair(user_id){
 		console.log('USER ID: '+user_id);
 		var A = this.chooseNextAsset();
+
+		//Se a DAL já convergiu, retorna null
+		if(A == null) return null;
+		
 		var R = this.chooseNextRelation(A);
 		console.log('Asset: '+A.label);
 		console.log('Relation: '+R.frm.label+' <-> '+R.to.label);
@@ -357,9 +379,11 @@ function DAL(){
 
 
 	//Se todos os Assets já convergiram, a DAL tb convergiu
+	//obs:	outra forma de saber se a DAL convergiu é usar a chooseNextPair
+	//		pois ela retorna NULL se a DAL já convergiu.
 	this.isConverged = function isConverged(){
 		for(var i=0; i<this.assets.length-1; i++){
-			if(this.assets[i].isConverged()){
+			if(!this.assets[i].isConverged()){
 				return false;
 			}
 		}
@@ -399,7 +423,7 @@ function Asset(uri,label,dur){
 	//Se todas as Relations já convergiram, o Asset tb convergiu
 	this.isConverged = function isConverged(){
 		for(var i=0; i<this.relations.length; i++){
-			if(this.relations[i].isConverged()){
+			if(!this.relations[i].isConverged()){
 				return false;
 			}
 		}

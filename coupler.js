@@ -67,12 +67,6 @@ io.on('connection', function (socket) {
 
     });
    
-   
-   if(dal.isConverged()){
-      socket.send(JSON.stringify( {act:"end"} ));
-   }
-   
-  
     socket.send(JSON.stringify({id:vi*10+vj ,act:"sync", v1_url:videos[vi].label ,v2_url:videos[vj].label, v1_c:vChunks[vi][videos[vi].chunk] ,v2_c:vChunks[vj][videos[vj].chunk], type:"confirm"}));
     console.log('Video: '+vi+' - Chunk: ('+videos[vi].chunk+') '+vChunks[vi][videos[vi].chunk]); 
     console.log('Video: '+vj+' - Chunk: ('+videos[vj].chunk+') '+vChunks[vj][videos[vj].chunk]); 
@@ -114,10 +108,14 @@ io.on('connection', function (socket) {
                   
                 console.log('New Videos');
                 var next = dal.chooseNextPair(obj.user_id);
-                vi = getVideoIndex(next.frm.label);
-                vj = getVideoIndex(next.to.label);
-                videos[vi].chunk = 1;    
-                videos[vj].chunk = 1;
+                if(next == null){
+                  socket.send(JSON.stringify( {act:"end"} ));
+                }else{
+                  vi = getVideoIndex(next.frm.label);
+                  vj = getVideoIndex(next.to.label);
+                  videos[vi].chunk = 1;    
+                  videos[vj].chunk = 1;
+                }
               }else{
                 console.log('New Chunks');
                 addScore(obj.user_id,10);
