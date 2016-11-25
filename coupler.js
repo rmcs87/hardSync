@@ -21,10 +21,10 @@ var sockets = [];
 var dal = new d.DAL();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2; ([6/7]  3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
-        {dur: 30, chunks:2, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
-        {dur: 35, chunks:2, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
-        {dur: 30, chunks:2, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
-        {dur: 35, chunks:2, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
+        {dur: 30, chunks:6, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
+        {dur: 35, chunks:7, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
+        {dur: 30, chunks:6, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
+        {dur: 35, chunks:7, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
       ];        
 var vChunks = new Array(); //random order of chunks in Videos
 var scores = {};          //Lista com a pontuação dos participantes;

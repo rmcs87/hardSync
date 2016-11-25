@@ -9,8 +9,8 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 1;
-var impossible_threshold = 1;
+var convergence_threshold = 3;
+var impossible_threshold = 3;
 
 /*contructor for DAL:*/
 function DAL(){
