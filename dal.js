@@ -9,8 +9,8 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 3;
-var impossible_threshold = 3;
+var convergence_threshold = 2;
+var impossible_threshold = 2;
 
 /*contructor for DAL:*/
 function DAL(){
@@ -299,7 +299,7 @@ function DAL(){
 			var rel = rels[i];
 
 
-		console.log('Candidate ('+rel.count+':'+rel.converged+')');// : '+rel.frm.label+' <-> '+rel.to.label);
+		////console.log('Candidate ('+rel.count+':'+rel.converged+')');// : '+rel.frm.label+' <-> '+rel.to.label);
 		
 			//Se a relação é marcada como impossivel, passa para a proxima
 			if( !rel.isPossible() ) continue;
@@ -348,7 +348,7 @@ function DAL(){
 			}
 		}
 	
-		console.log(candidates);
+		//console.log(candidates);
 		
 		l = candidates.length;
 		if(l >= 0){
