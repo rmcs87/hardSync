@@ -36,7 +36,7 @@ function DAL(){
 	this.addContribution = function addContribution(a,b,delta,user){
 		var rel = this.getRelation(a,b);
 		
-		console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+		//console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 		
 		rel.infered = false;
 		
@@ -44,11 +44,10 @@ function DAL(){
 			rel.impossible++;
 		}else{
 			rel.add(new Contribution(user,delta));
+			this.updateConvergence(a,b);
+			this.clearInference();
+			this.inferUnknown();			
 		}
-		this.updateConvergence(a,b);
-		//this.clearInference();
-		//this.inferUnknown();			
-		//this.inferUnknown();	
 	}
 
 	/*Function to recover an Asset
@@ -149,12 +148,20 @@ function DAL(){
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
 
-		//Existe relação direta entre A e B
+
+		if(this.it > this.assets.length){
+			return null;
+		}		
+
+		//Relação direta entre A e B
 		var rel = this.getRelation(a,b);
-		
-		if(!rel.isPossible()) return null;
-		
+	
+		//Caso exista esta relação direta
 		if(rel.delta != null){
+			//Se o for beco sem saida, faz o rollback	
+			if(!rel.isPossible()){
+				return null;
+			}else{
 				var dr = rel.delta;
 				if(rel.frm == b){
 					dr = -dr
@@ -162,22 +169,25 @@ function DAL(){
 				//Zera a altura da arvore de recursão
 				this.it=0;
 				return dr;
+			}
 		}
 
+		//Caso não haja relacao direta entre A e B, se verifica as
+		//outras relações que partem de A para verificar transitividade até B.
 		var rels = a.relations;
 
-		//Atualiza a altura da arvore de recursão
+		//Atualiza a altura da arvore de recursão, desceu mais 1 nível
 		this.it++;
 
 		for(var i=0; i < rels.length; i++){
 			var r = rels[i];
 
-			if(r.delta == null){
+			if(r.delta == null || !r.isPossible()){
 				continue;
 			}
 
 			var d = this.search(r.to,b);
-			if(d == null || !r.isPossible()) continue;
+			if(d == null) continue;
 			
 			
 			if(this.it > this.assets.length || d){
@@ -194,13 +204,15 @@ function DAL(){
 	}
 
 	this.clearInference = function clearInference(){
-		for(var i = 0; i < this.assets.length; i++){
-			for(var j = i; j < this.assets.length; j++){
-				var rel = this.assets[i].relations[j];
+		for(var A in this.assets){
+			var rels = this.assets[A].relations;
+			for(var B in rels){
+				var rel = rels[B];
+
 				if(!rel)continue;
 				if(rel.infered){
 					//console.log('Deleting Inference: '+rel.frm.label+' <-> '+rel.to.label);
-					this.assets[i].relations[j] = new Relation(rel.frm,rel.to);
+					this.assets[A].relations[B] = new Relation(rel.frm,rel.to);
 				}
 			}
 		}
@@ -211,55 +223,23 @@ function DAL(){
 	/*Function to infer the unknown Deltas.*/
 	//Procura transitividade entre A e B recursivamente
 	this.inferUnknown = function inferUnknown(){
-	
-		//Passo 1 - Percorre as contribuições e infere por transitividade tudo que for possivél;
-
-		//Percorre todos assets, menos o ultimo, pois ele não tem relacoes;
-		for(var i = 0; i < this.assets.length - 1; i++){
-			//Percorre todos assets à direita, menos o último;
-			for(var j = i+1; j < this.assets.length - 1; j++){
-				var rel = this.assets[i].relations[j-i-1];
-				
-				//Se ha relação entre Ai e Aj;
-				if(rel.count > 0){
-					//Percorre todas contribuições para ver se tem algo que Ai sabe e Aj não;
-					for(var k = 0; k < this.assets.length - j - 1; k++){
-						//Se Ai sabe e Aj não, infere;
-						if( ( this.assets[i].relations[k+1].count > 0) && (this.assets[j].relations[k].count == 0) ){
-							//BC = -BA + AC
-							//this.assets[j].relations[k].delta = -this.assets[i].relations[j-1-i].delta + this.assets[i].relations[k+j-i].delta;
-							this.assets[j].relations[k].delta = -this.assets[i].relations[j-1-i].delta + this.assets[i].relations[k+j-i].delta;
-
-							var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
-							rel.infered = true;
-
-						}
-					}
-				}
-			}
-		}
-
-
-		//Passo 2 - Percorre os Assets, e quando acha uma lacuna, tenta encontrar um caminha até ela.
 
 		//Percorre os Assets e tenta inferir as lacunas
-		for(var i = 0; i < this.assets.length; i++){
-		
-			var rels = this.assets[i].relations;
-			
-			for(j=0; j < rels.length; j++){
-				var rel = rels[j];
-				
-				if(rel.count == 0 || !rel.isPossible()){
+		for(var A in this.assets){
+			var rels = this.assets[A].relations;
+			for(var B in rels){
+				this.it = 0;
+				var rel = rels[B];
+				if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
 					var delta = this.search(rel.frm, rel.to);
 					if(delta != null){
 						rel.delta = delta;
-							rel.infered = true;
+						rel.infered = true;
 					}
 				}
 			}		
 		}
-		
+		return false;
 	}
 
 	/*Function to show on console all relations.*/
@@ -277,7 +257,7 @@ function DAL(){
 
 	/* Compare a converger DAL with a Gold Matrix */
 	this.compare = function compare(gold){
-		var error=0,total=0, infered=0, impossible=0;
+		var error=0,total=0, infered=0, impossible=0, ok=0;
 		for(var A in this.assets){
 			for(var B in this.assets[A].relations){
 				total++;
@@ -293,7 +273,10 @@ function DAL(){
 					if(rel.delta != g && rel.isConverged()){
 						if(g != 'I' || rel.isPossible){
 							error++;
-
+						}
+					}else{
+						if(rel.isConverged() || (rel.isInfered() && g != 'I')){
+							ok++;
 							console.log('Converged: '+rel.isConverged());
 							console.log('Infered: '+rel.isInfered());
 							console.log('Possible: '+rel.isPossible());
@@ -307,6 +290,7 @@ function DAL(){
 		}
 		console.log('Error: '+error+' / '+total);
 		console.log('Impossible: '+impossible+' / '+total);
+		console.log('OK: '+ok+' / '+total);
 		console.log('Infereds: '+infered+' / '+total+'\n');
 	}
 
