@@ -1,7 +1,7 @@
 var d = require("../dal.js");
 var dal = new d.DAL();
 
-var nVideos = 10;
+var nVideos = 9;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -11,27 +11,28 @@ var min = 5;//tamanho minimo do video
 var max = 300;//tamanho maximo do video
 
 // % de chance de um worker contribuir corretamente
-var crowdReputation = 10;
+var crowdReputation = 100;
 
 var user = new d.User('faux-user-001', crowdReputation);
 
 
 //Vetor de videos gerados 
-//var videos = generateVideos(nVideos,start,duration,min,max);
-var videos = loadVideos(nVideos);
+var videos = generateVideos(nVideos,start,duration,min,max);
+//var videos = loadVideos(nVideos);
 
 var gold = geraGold(videos);
+console.log('Gold');
+printGold(gold);
 
-//printGold(gold);
-
-//for(var i=0; newRandomContribution(); i++);
-
-//for(var i=0; newValidContribution(); i++);
+for(var i=0; newContribution() ; i++);
 
 
-for(var i=0; newContribution(); i++);
+dal.compare(gold);
 
-console.log(i);
+console.log('Contributions: '+i);
+
+dal.print();
+
 
 
 ///FUNCOES
@@ -57,7 +58,21 @@ function geraGold(videos){
 
 function getDelta(A,B){
     if(A==null || B==null) return 'I';
-    return B.getStart() - A.getStart();
+    
+    var delta = B.getStart() - A.getStart()
+    
+    var sa = A.getStart();
+    var sb = B.getStart();
+    var dur = A.getDuration();
+    if(B.getStart( ) < A.getStart()){
+        sa = B.getStart();
+        sb = A.getStart();
+        dur = B.getDuration();
+    }
+    
+    if(sb > (sa+dur)) delta = 'I';
+    
+    return delta;
 }
 
 function newContribution(){

@@ -34,9 +34,9 @@ function DAL(){
 		delta (NUMBER): the difference time between a and b;
 	*/
 	this.addContribution = function addContribution(a,b,delta,user){
-		//console.log(a);
-		//console.log(b);
 		var rel = this.getRelation(a,b);
+		
+		console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 		
 		rel.infered = false;
 		
@@ -46,9 +46,9 @@ function DAL(){
 			rel.add(new Contribution(user,delta));
 		}
 		this.updateConvergence(a,b);
-		this.clearInference();
-		this.inferUnknown();			
-		this.inferUnknown();	
+		//this.clearInference();
+		//this.inferUnknown();			
+		//this.inferUnknown();	
 	}
 
 	/*Function to recover an Asset
@@ -152,14 +152,17 @@ function DAL(){
 
 		//Existe relação direta entre A e B
 		var rel = this.getRelation(a,b);
+		
+		if(!rel.isPossible()) return null;
+		
 		if(rel.delta != null){
-			var dr = rel.delta;
-			if(rel.frm == b){
-				dr = -dr
-			}
-			//Zera a altura da arvore de recursão
-			this.it=0;
-			return dr;
+				var dr = rel.delta;
+				if(rel.frm == b){
+					dr = -dr
+				}
+				//Zera a altura da arvore de recursão
+				this.it=0;
+				return dr;
 		}
 
 		var rels = a.relations;
@@ -175,6 +178,9 @@ function DAL(){
 			}
 
 			var d = this.search(r.to,b);
+			if(d == null || !r.isPossible()) continue;
+			
+			
 			if(this.it > this.assets.length || d){
 				//Verifica o "sentido" do delta;
 				dr = r.delta;
@@ -222,6 +228,7 @@ function DAL(){
 						//Se Ai sabe e Aj não, infere;
 						if( ( this.assets[i].relations[k+1].count > 0) && (this.assets[j].relations[k].count == 0) ){
 							//BC = -BA + AC
+							//this.assets[j].relations[k].delta = -this.assets[i].relations[j-1-i].delta + this.assets[i].relations[k+j-i].delta;
 							this.assets[j].relations[k].delta = -this.assets[i].relations[j-1-i].delta + this.assets[i].relations[k+j-i].delta;
 
 							var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
@@ -244,10 +251,11 @@ function DAL(){
 			for(j=0; j < rels.length; j++){
 				var rel = rels[j];
 				
-				if(rel.count == 0){
-					rel.delta = this.search(rel.frm, rel.to);
-					if(rel.delta != null){
-						rel.infered = true;
+				if(rel.count == 0 || !rel.isPossible()){
+					var delta = this.search(rel.frm, rel.to);
+					if(delta != null){
+						rel.delta = delta;
+							rel.infered = true;
 					}
 				}
 			}		
@@ -257,16 +265,43 @@ function DAL(){
 
 	/*Function to show on console all relations.*/
 	this.print = function print(){
-		for(var i = 0; i < this.assets.length; i++){
-			for(var j = 0; j < this.assets.length; j++){
-				if(this.assets[i].label != this.assets[j].label){
-					var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
-					//console.log('Converged: '+rel.converged);
-					//console.log('Infered: '+rel.infered);
-					//console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
-				}
+		for(var A in this.assets){
+			for(var B in this.assets[A].relations){
+				var rel = this.assets[A].relations[B];
+				console.log('Converged: '+rel.converged);
+				console.log('Infered: '+rel.infered);
+				console.log(rel.frm.label+'<->'+rel.to.label+'='+rel.delta+'\n');
 			}
 		}
+	}
+	
+
+	/* Compare a converger DAL with a Gold Matrix */
+	this.compare = function compare(gold){
+		var error=0,total=0, infered=0, impossible=0;
+		for(var A in this.assets){
+			for(var B in this.assets[A].relations){
+				total++;
+				var rel = this.assets[A].relations[B];
+				
+				if(rel.isInfered()) infered++;
+				
+				if(!rel.isPossible()) impossible++;
+
+				if(rel.delta != gold[A][B]) error++;
+
+				console.log('Converged: '+rel.isConverged());
+				console.log('Infered: '+rel.isInfered());
+				console.log('Possible: '+rel.isPossible());
+				console.log(rel.frm.label+'<->'+rel.to.label);
+				console.log('DAL  : '+rel.delta);
+				console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');
+			}
+		}
+		console.log('Error: '+error+' / '+total);
+		console.log('Impossible: '+impossible+' / '+total);
+		console.log('Impossible Infered: '+impossible_infered+' / '+total);
+		console.log('Infereds: '+infered+' / '+total+'\n');
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
@@ -357,7 +392,7 @@ function DAL(){
 		//Seleciona apenas os Assets que ainda não convergiram
 		var candidates = new Array();
 		for(var a=0; a<l; a++){
-			if(!this.assets[a].isConverged()){
+			if(!this.assets[a].isConverged() && this.assets[a].isPossible()){
 				candidates.push(a);
 			}
 		}
@@ -442,6 +477,15 @@ function Asset(uri,label,dur){
 			}
 		}
 		return true;
+	}
+
+	this.isPossible = function isPossible(){
+		for(var i=0; i<this.relations.length; i++){
+			if(this.relations[i].isPossible()){	
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
