@@ -1,7 +1,7 @@
 var d = require("../dal.js");
 var dal = new d.DAL();
 
-var nVideos = 100;
+var nVideos = 10;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -10,14 +10,73 @@ var duration = 599;//Duracao do Evento em segundos
 var min = 5;//tamanho minimo do video
 var max = 300;//tamanho maximo do video
 
-var user = new d.User('faux-user-001', 1);
+var user = new d.User('faux-user-001', 70);//70% de chance de contribuir corretamente
 
 
 //Vetor de videos gerados 
 //var videos = generateVideos(nVideos,start,duration,min,max);
 var videos = loadVideos(nVideos);
 
-for(var i=0; newRandomContribution(); i++)console.log(i);
+var gold = geraGold(videos);
+
+//printGold(gold);
+
+//for(var i=0; newRandomContribution(); i++);
+
+//for(var i=0; newValidContribution(); i++);
+
+
+for(var i=0; newContribution(); i++);
+
+console.log(i);
+
+
+///FUNCOES
+
+function printGold(gold) {
+    for(var A in gold){
+        for(var B in gold[A]){
+            console.log('['+A+','+B+'] = '+gold[A][B]);
+        }
+    }
+}
+
+function geraGold(videos){
+    var gold = new Array();
+    for(var A in videos){
+        gold[A] = new Array();
+        for(var B in videos){
+            gold[A][B] = getDelta(videos[A],videos[B]);
+        }
+    }
+    return gold;
+}
+
+function getDelta(A,B){
+    if(A==null || B==null) return 'I';
+    return B.getStart() - A.getStart();
+}
+
+function newContribution(){
+    var chance = Math.random() * 1000 % 100;
+    if(chance < user.lvl){
+        return newValidContribution();
+    }else{
+        return newRandomContribution();
+    }
+}
+
+function newValidContribution(){
+    var pair = dal.chooseNextPair(user.id);
+
+    if(pair == null) return false;
+
+    var delta =  getDelta(videos[pair.frm.label], videos[pair.to.label]);
+
+    dal.addContribution(pair.frm, pair.to,delta,user);
+
+    return true;
+}
 
 function newRandomContribution(){
     var pair = dal.chooseNextPair(user.id);
@@ -39,15 +98,11 @@ function generateVideos(number,start,dur,min,max){
         var duration = Math.random() * Math.min(max - min, start_seg - min) + min;
         var label= 'V'+i;
         var uri = 'http://videos.dataset.io/'+label+'.webm';
-        
         var video = new Video(start_seg,duration,label,uri);
      
         dal.addAsset(new d.Asset(uri, label, duration));
-        
-        video.print();
-        videos.push(video);
+        videos[video.getLabel()] = video;
     }
-    
     return videos;
 }
 
@@ -59,8 +114,7 @@ function loadVideos(number){
     for(var i=0; i<number; i++){
         var video = new Video(vetVideos[i].start,vetVideos[i].dur,vetVideos[i].label,vetVideos[i].uri);
         dal.addAsset(new d.Asset(vetVideos[i].uri, vetVideos[i].label, vetVideos[i].dur));
-        video.print();
-        videos.push(video);
+        videos[video.getLabel()] = video;
     }
     return videos;
 }
@@ -73,6 +127,12 @@ function Video(start_seg, duration, label_id, url){
     var dur = duration;
     var label = label_id;
     var uri= url;
+
+    this.getLabel = function getLabel(){return label;}
+
+    this.getStart = function getLabel(){return start;}
+
+    this.getDuration = function getLabel(){return dur;}
 
     this.print = function print(){
         console.log('{start: '+start+',duration: '+dur+', label: '+label+', uri: '+uri+'}');
