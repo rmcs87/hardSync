@@ -180,7 +180,7 @@ function DAL(){
 				var rel = this.assets[i].relations[j];
 				if(!rel)continue;
 				if(rel.infered){
-					console.log('Deleting Inference: '+rel.frm.label+' <-> '+rel.to.label);
+					//console.log('Deleting Inference: '+rel.frm.label+' <-> '+rel.to.label);
 					this.assets[i].relations[j] = new Relation(rel.frm,rel.to);
 				}
 			}
@@ -247,9 +247,9 @@ function DAL(){
 			for(var j = 0; j < this.assets.length; j++){
 				if(this.assets[i].label != this.assets[j].label){
 					var rel = this.getRelation(this.getAsset(this.assets[i].label),this.getAsset(this.assets[j].label));
-					console.log('Converged: '+rel.converged);
-					console.log('Infered: '+rel.infered);
-					console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
+					//console.log('Converged: '+rel.converged);
+					//console.log('Infered: '+rel.infered);
+					//console.log(this.assets[i].label+'<->'+this.assets[j].label+'='+this.getDiff(this.assets[i],this.assets[j])+'\n');
 				}
 			}
 		}
@@ -354,7 +354,7 @@ function DAL(){
 		if(l >= 0){
 			//Retorna um Asset aleatório entre os que ainda não convergiram
 			a = Math.floor(Math.random() * l);
-			console.log('Choosen: '+candidates[a]);
+			//console.log('Choosen: '+candidates[a]);
 			return this.assets[candidates[a]];
 		}
 
@@ -365,15 +365,15 @@ function DAL(){
 
 	//choose the next pair to distribute and get a contribution
 	this.chooseNextPair = function chooseNextPair(user_id){
-		console.log('USER ID: '+user_id);
+		//console.log('USER ID: '+user_id);
 		var A = this.chooseNextAsset();
 
 		//Se a DAL já convergiu, retorna null
 		if(A == null) return null;
 		
 		var R = this.chooseNextRelation(A);
-		console.log('Asset: '+A.label);
-		console.log('Relation: '+R.frm.label+' <-> '+R.to.label);
+		//console.log('Asset: '+A.label);
+		//console.log('Relation: '+R.frm.label+' <-> '+R.to.label);
 		return R;
 	}
 
@@ -453,7 +453,7 @@ function Relation(frm, to){
 		c(Contribution): a contribtuion from an User
 	*/
 	this.add = function addContribution(c){
-		//console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label);
+		//console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label+')');
 		this.contributions.push(c);
 		this.count++;
 	}
