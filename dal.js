@@ -112,15 +112,14 @@ function DAL(){
 				cc++;
 			}else{
 				if(j == nc){
-					if(ncc >= cc){ //new
+					if(ncc >= cc){ 
 						c = j;
-						//cc = 1;
-						cc = ncc;//new
-						ncc = 0;//new
-					}else{//new - all
+						cc = ncc;
+						ncc = 0;
+					}else{
 						nc++;
 					}
-				}else{//new - all
+				}else{
 						nc = j;
 						ncc = 1;
 				}
@@ -284,23 +283,30 @@ function DAL(){
 				total++;
 				var rel = this.assets[A].relations[B];
 				
+				var g =  gold[rel.frm.label][rel.to.label];
+
 				if(rel.isInfered()) infered++;
 				
-				if(!rel.isPossible()) impossible++;
+				if(!rel.isPossible()){
+					impossible++;
+				}else{
+					if(rel.delta != g && rel.isConverged()){
+						if(g != 'I' || rel.isPossible){
+							error++;
 
-				if(rel.delta != gold[A][B]) error++;
-
-				console.log('Converged: '+rel.isConverged());
-				console.log('Infered: '+rel.isInfered());
-				console.log('Possible: '+rel.isPossible());
-				console.log(rel.frm.label+'<->'+rel.to.label);
-				console.log('DAL  : '+rel.delta);
-				console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');
+							console.log('Converged: '+rel.isConverged());
+							console.log('Infered: '+rel.isInfered());
+							console.log('Possible: '+rel.isPossible());
+							console.log(rel.frm.label+'<->'+rel.to.label);
+							console.log('DAL  : '+rel.delta);
+							console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');
+						}
+					}
+				}
 			}
 		}
 		console.log('Error: '+error+' / '+total);
 		console.log('Impossible: '+impossible+' / '+total);
-		console.log('Impossible Infered: '+impossible_infered+' / '+total);
 		console.log('Infereds: '+infered+' / '+total+'\n');
 	}
 
