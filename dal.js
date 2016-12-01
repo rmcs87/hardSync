@@ -81,6 +81,9 @@ function DAL(){
 	// Function to check the convergence of contributions, and update deltas with mode value
 	this.updateConvergence = function updateConvergence(a,b){
 
+		var nc = 0;//next possible candidate
+		var ncc = 0;//next possible candidate counter
+
 		var c = 0;//current(last) slot selected
 		var cc = 0;//convergence consecutive counter
 		var ca = 0;//convergence candidate
@@ -108,8 +111,19 @@ function DAL(){
 			if(j == c){
 				cc++;
 			}else{
-				c = j;
-				cc = 1;
+				if(j == nc){
+					if(ncc >= cc){ //new
+						c = j;
+						//cc = 1;
+						cc = ncc;//new
+						ncc = 0;//new
+					}else{//new - all
+						nc++;
+					}
+				}else{//new - all
+						nc = j;
+						ncc = 1;
+				}
 			}
 
 			if(cc == convergence_threshold){

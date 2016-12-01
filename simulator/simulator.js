@@ -10,7 +10,10 @@ var duration = 599;//Duracao do Evento em segundos
 var min = 5;//tamanho minimo do video
 var max = 300;//tamanho maximo do video
 
-var user = new d.User('faux-user-001', 70);//70% de chance de contribuir corretamente
+// % de chance de um worker contribuir corretamente
+var crowdReputation = 10;
+
+var user = new d.User('faux-user-001', crowdReputation);
 
 
 //Vetor de videos gerados 
@@ -83,7 +86,7 @@ function newRandomContribution(){
     
     if(pair == null) return false;
     
-    var delta = Math.random() * 1000 % 5;
+    var delta = Math.random() * 1000 % Math.min(pair.frm.dur, pair.to.dur);
     
     dal.addContribution(pair.frm, pair.to,delta,user);
     
