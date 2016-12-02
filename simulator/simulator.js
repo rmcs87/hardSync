@@ -1,7 +1,7 @@
 var d = require("../dal.js");
 var dal = new d.DAL();
 
-var nVideos = 100;
+var nVideos = 50;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -11,7 +11,7 @@ var min = 5;//tamanho minimo do video
 var max = 300;//tamanho maximo do video
 
 // % de chance de um worker contribuir corretamente
-var crowdReputation = 70;
+var crowdReputation = 100;
 
 var user = new d.User('faux-user-001', crowdReputation);
 
@@ -26,13 +26,14 @@ var gold = geraGold(videos);
 //console.log('Gold');
 //printGold(gold);
 
-for(var i=0; newContribution() ; i++);
+var contr;
+for(contr=0; newContribution() ; contr++);
 
 
 
 dal.compare(gold);
 
-console.log('Contributions: '+i);
+console.log('Contributions: '+contr);
 
 //dal.print();
 

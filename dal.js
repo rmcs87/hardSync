@@ -44,10 +44,11 @@ function DAL(){
 			rel.impossible++;
 		}else{
 			rel.add(new Contribution(user,delta));
-			this.updateConvergence(a,b);
-			this.clearInference();
-			this.inferUnknown();			
+			if(rel.impossible > 0) rel.impossible--;		
 		}
+		this.updateConvergence(a,b);
+		this.clearInference();
+		this.inferUnknown();	
 	}
 
 	/*Function to recover an Asset
@@ -247,8 +248,9 @@ function DAL(){
 		for(var A in this.assets){
 			for(var B in this.assets[A].relations){
 				var rel = this.assets[A].relations[B];
-				console.log('Converged: '+rel.converged);
-				console.log('Infered: '+rel.infered);
+				console.log('Converged: '+rel.isConverged());
+				console.log('Infered: '+rel.isInfered());
+				console.log('Possible: '+rel.isPossible());
 				console.log(rel.frm.label+'<->'+rel.to.label+'='+rel.delta+'\n');
 			}
 		}
@@ -553,11 +555,71 @@ function User(id, lvl) {
 }
 
 
+function testDal(){
+
+	//Creating users who will generate the sugestions
+	var users = new Array();
+	users[0] = new User('Confiavel', 90);
+	users[1] = new User('Meio Confiavel', 70);
+	users[2] = new User('Pouco Confiavel', 30);
+	users[3] = new User('Nao Confiavel', 10);
+
+	var X = users[0];
+	var Y = users[1];
+	var Z = users[2];
+	var W = users[3];
+
+	//Creating sub-arrays for videos assuming 4 videos on this test - A, B, C and D
+	var dal = new DAL();
+	dal.addAsset(new Asset("0.webm","A",10));
+	dal.addAsset(new Asset("1.webm","B",15));
+	dal.addAsset(new Asset("2.webm","C",23));
+	dal.addAsset(new Asset("3.webm","D",2));
+	var assets = dal.assets;
+
+	var A = dal.getAsset('A');
+	var B = dal.getAsset('B');
+	var C = dal.getAsset('C');
+	var D = dal.getAsset('D');
+
+	dal.addContribution(A,B,3,X);
+
+	dal.addContribution(B,C,7,X);
+
+	dal.addContribution(C,D,11,X);
+	dal.addContribution(C,D,11,X);
+	dal.addContribution(C,D,13,X);
+	dal.addContribution(C,D,12,X);
+
+	//I means impossible to relate 
+	dal.addContribution(C,D,'I',X);
+
+
+	dal.addContribution(C,D,26,X);
+	dal.addContribution(C,D,26,X);
+	dal.addContribution(C,D,27,X);
+	dal.addContribution(C,D,25.1,X);
+	dal.addContribution(C,D,25.2,X);
+	dal.addContribution(C,D,25.1,X);
+	dal.addContribution(C,D,27,X);
+	dal.addContribution(C,D,28,X);
+
+
+
+	dal.addContribution(C,D,'I',X);
+
+
+	dal.print();
+}
+
+
+
 module.exports.DAL = DAL;
 module.exports.Asset = Asset;
 module.exports.Relation = Relation;
 module.exports.Contribution = Contribution;
 module.exports.User = User;
 
+//testDal();
 
 
