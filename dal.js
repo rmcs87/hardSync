@@ -11,6 +11,9 @@ var ss = require("./simple-statistics.min.js");
 //Defines
 var convergence_threshold = 2;
 var impossible_threshold = 2;
+var no_overlap_threshhold = 2;
+
+var xx=0;
 
 /*contructor for DAL:*/
 function DAL(){
@@ -39,16 +42,19 @@ function DAL(){
 		//console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 		
 		rel.infered = false;
-		
 		if( delta == 'I'){
 			rel.impossible++;
 		}else{
-			rel.add(new Contribution(user,delta));
-			if(rel.impossible > 0) rel.impossible--;		
+			if(delta == 'N'){
+				rel.noOverlap++;
+			}else{
+				rel.add(new Contribution(user,delta));
+				if(rel.impossible > 0) rel.impossible--;
+				this.updateConvergence(a,b);
+				this.clearInference();
+			}	
+			this.inferUnknown();		
 		}
-		this.updateConvergence(a,b);
-		this.clearInference();
-		this.inferUnknown();	
 	}
 
 	/*Function to recover an Asset
@@ -236,6 +242,7 @@ function DAL(){
 					if(delta != null){
 						rel.delta = delta;
 						rel.infered = true;
+						rel.impossible = 0;
 					}
 				}
 			}		
@@ -251,6 +258,7 @@ function DAL(){
 				console.log('Converged: '+rel.isConverged());
 				console.log('Infered: '+rel.isInfered());
 				console.log('Possible: '+rel.isPossible());
+				console.log('Has Overlap: '+rel.hasOverlap());
 				console.log(rel.frm.label+'<->'+rel.to.label+'='+rel.delta+'\n');
 			}
 		}
@@ -277,11 +285,12 @@ function DAL(){
 							error++;
 						}
 					}else{
-						if(rel.isConverged() || (rel.isInfered() && g != 'I')){
+						if(rel.isConverged() || (rel.isInfered())){
 							ok++;
 							console.log('Converged: '+rel.isConverged());
 							console.log('Infered: '+rel.isInfered());
 							console.log('Possible: '+rel.isPossible());
+							console.log('Has Overlap: '+rel.hasOverlap());
 							console.log(rel.frm.label+'<->'+rel.to.label);
 							console.log('DAL  : '+rel.delta);
 							console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');
@@ -333,6 +342,7 @@ function DAL(){
 
 	//Prioridade: 1. Quase convergindo, 2. Não convergido, 3. Convergido.
 	this.chooseNextRelation = function chooseNextRelation(A){
+
 		var rels = A.relations;
 		var cc=null, ncc=null;//converged and non-converged candidates	
 
@@ -343,7 +353,7 @@ function DAL(){
 		////console.log('Candidate ('+rel.count+':'+rel.converged+')');// : '+rel.frm.label+' <-> '+rel.to.label);
 		
 			//Se a relação é marcada como impossivel, passa para a proxima
-			if( !rel.isPossible() ) continue;
+			if( !rel.isPossible() || !rel.hasOverlap() ) continue;
 
 			if(rel.isConverged()){
 				if(cc == null){
@@ -384,7 +394,11 @@ function DAL(){
 		//Seleciona apenas os Assets que ainda não convergiram
 		var candidates = new Array();
 		for(var a=0; a<l; a++){
-			if(!this.assets[a].isConverged() && this.assets[a].isPossible()){
+			var v = this.assets[a];
+			nc = !v.isConverged();
+			p = v.isPossible();
+			o = v.hasOverlap();
+			if(nc && p && o){
 				candidates.push(a);
 			}
 		}
@@ -396,6 +410,7 @@ function DAL(){
 			//Retorna um Asset aleatório entre os que ainda não convergiram
 			a = Math.floor(Math.random() * l);
 			//console.log('Choosen: '+candidates[a]);
+			a=0;
 			return this.assets[candidates[a]];
 		}
 
@@ -406,6 +421,7 @@ function DAL(){
 
 	//choose the next pair to distribute and get a contribution
 	this.chooseNextPair = function chooseNextPair(user_id){
+
 		//console.log('USER ID: '+user_id);
 		var A = this.chooseNextAsset();
 
@@ -464,7 +480,7 @@ function Asset(uri,label,dur){
 	//Se todas as Relations já convergiram, o Asset tb convergiu
 	this.isConverged = function isConverged(){
 		for(var i=0; i<this.relations.length; i++){
-			if(!this.relations[i].isConverged() && !this.relations[i].isInfered() && this.relations[i].isPossible()){
+			if(!this.relations[i].isConverged() && !this.relations[i].isInfered() && this.relations[i].isPossible() && this.relations[i].hasOverlap()){
 				return false;
 			}
 		}
@@ -474,6 +490,15 @@ function Asset(uri,label,dur){
 	this.isPossible = function isPossible(){
 		for(var i=0; i<this.relations.length; i++){
 			if(this.relations[i].isPossible()){	
+				return true;
+			}
+		}
+		return false;
+	}
+
+	this.hasOverlap = function hasOverlap(){
+		for(var i=0; i<this.relations.length; i++){
+			if(this.relations[i].hasOverlap()){	
 				return true;
 			}
 		}
@@ -497,13 +522,14 @@ function Relation(frm, to){
 	this.infered = false;
 	this.converged = false;
 	this.impossible = 0;
+	this.noOverlap = 0;
 
 
 	/*function to add Contributions to a Relation
 		c(Contribution): a contribtuion from an User
 	*/
 	this.add = function addContribution(c){
-		//console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label+')');
+		console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label+')');
 		this.contributions.push(c);
 		this.count++;
 	}
@@ -517,11 +543,19 @@ function Relation(frm, to){
 	}
 
 	this.isPossible = function isPossible(){
-		if(this.impossible < impossible_threshold){
+		if(this.impossible < impossible_threshold ){
 			return true;
 		}
 		return false;
 	}
+
+	this.hasOverlap = function hasOverlap(){
+		if(this.noOverlap < no_overlap_threshhold){
+			return true;
+		}
+		return false;
+	}
+
 }
 
 /*constructor for Contribution
