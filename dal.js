@@ -300,7 +300,7 @@ function DAL(){
 		console.log('Error: '+error+' / '+total);
 		console.log('Impossible: '+impossible+' / '+total);
 		console.log('OK: '+ok+' / '+total);
-		console.log('Infereds: '+infered+' / '+total+'\n');
+		console.log('Infereds: '+infered+' / '+total);
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.

@@ -11,7 +11,7 @@ var min = 5;//tamanho minimo do video
 var max = 300;//tamanho maximo do video
 
 // % de chance de um worker contribuir corretamente
-var crowdReputation = 100;
+var crowdReputation = process.argv[2];
 
 var users = new Array();
 users[0] = new d.User('faux-user-001', 90);
@@ -34,7 +34,8 @@ var gold = geraGold(videos);
 var contr;
 for(contr=0; newContribution() ; contr++);
 
-
+console.log('#'+process.argv[3]);
+console.log('Crowd Reputation: '+crowdReputation+'%');
 
 dal.compare(gold);
 
