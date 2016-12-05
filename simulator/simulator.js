@@ -1,7 +1,7 @@
 var d = require("../dal.js");
 var dal = new d.DAL();
 
-var nVideos = 100;
+var nVideos = 80;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -13,7 +13,11 @@ var max = 300;//tamanho maximo do video
 // % de chance de um worker contribuir corretamente
 var crowdReputation = 100;
 
-var user = new d.User('faux-user-001', crowdReputation);
+var users = new Array();
+users[0] = new d.User('faux-user-001', 90);
+users[1] = new d.User('faux-user-002', 70);
+users[2] = new d.User('faux-user-003', 30);
+users[3] = new d.User('faux-user-004', 10);
 
 
 //Vetor de videos gerados 
@@ -25,7 +29,7 @@ var nGold = 0;
 var gold = geraGold(videos);
 //console.log(JSON.stringify(gold));
 //console.log('Gold');
-printGold(gold);
+//printGold(gold);
 
 var contr;
 for(contr=0; newContribution() ; contr++);
@@ -83,15 +87,39 @@ function getDelta(A,B){
 }
 
 function newContribution(){
-    var chance = Math.random() * 1000 % 100;
-    if(chance < user.lvl){
-        return newValidContribution();
-    }else{
-        return newRandomContribution();
-    }
+	var userClass = Math.random() * 1000 % 100;
+    	var userSubClass = Math.floor(Math.random() * 1000 % 2);
+	var userId;
+	var user;
+
+    	var chance = Math.random() * 1000 % 100;
+
+   	if(userClass < crowdReputation){ // Confiavel
+		if(userSubClass == 0){
+			id = 0;
+		}else{
+			id = 1;
+		}
+	}else{ 				// Nao Confiavel
+		if(userSubClass == 0){
+			id = 2;
+		}else{
+			id = 3;
+		}
+	}
+
+	//console.log("Grupo "+id);
+
+	user = users[id];
+   
+	if(chance < user.lvl){
+        	return newValidContribution(user);
+    	}else{
+        	return newRandomContribution(user);
+    	}
 }
 
-function newValidContribution(){
+function newValidContribution(user){
     var pair = dal.chooseNextPair(user.id);
 
     if(pair == null) return false;
@@ -103,7 +131,7 @@ function newValidContribution(){
     return true;
 }
 
-function newRandomContribution(){
+function newRandomContribution(user){
     var pair = dal.chooseNextPair(user.id);
     
     if(pair == null) return false;

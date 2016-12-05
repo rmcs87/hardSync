@@ -13,8 +13,6 @@ var convergence_threshold = 2;
 var impossible_threshold = 2;
 var no_overlap_threshhold = 2;
 
-var xx=0;
-
 /*contructor for DAL:*/
 function DAL(){
 
@@ -258,7 +256,7 @@ function DAL(){
 				console.log('Converged: '+rel.isConverged());
 				console.log('Infered: '+rel.isInfered());
 				console.log('Possible: '+rel.isPossible());
-				console.log('Has Overlap: '+rel.hasOverlap());
+				console.log('Can Have Overlap: '+rel.hasOverlap());
 				console.log(rel.frm.label+'<->'+rel.to.label+'='+rel.delta+'\n');
 			}
 		}
@@ -287,13 +285,13 @@ function DAL(){
 					}else{
 						if(rel.isConverged() || (rel.isInfered())){
 							ok++;
-							console.log('Converged: '+rel.isConverged());
+						/*	console.log('Converged: '+rel.isConverged());
 							console.log('Infered: '+rel.isInfered());
 							console.log('Possible: '+rel.isPossible());
 							console.log('Has Overlap: '+rel.hasOverlap());
 							console.log(rel.frm.label+'<->'+rel.to.label);
 							console.log('DAL  : '+rel.delta);
-							console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');
+							console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');*/
 						}
 					}
 				}
@@ -410,7 +408,9 @@ function DAL(){
 			//Retorna um Asset aleatório entre os que ainda não convergiram
 			a = Math.floor(Math.random() * l);
 			//console.log('Choosen: '+candidates[a]);
-			a=0;
+
+			a=0;//Comentar esta linha para habilitar a escolha aleatoria do Asset
+
 			return this.assets[candidates[a]];
 		}
 
@@ -529,7 +529,7 @@ function Relation(frm, to){
 		c(Contribution): a contribtuion from an User
 	*/
 	this.add = function addContribution(c){
-		console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label+')');
+		//console.log('Contribution ('+this.frm.label+' <- ('+c.value+') -> '+this.to.label+')');
 		this.contributions.push(c);
 		this.count++;
 	}
