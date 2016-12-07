@@ -9,9 +9,9 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 2;
-var impossible_threshold = 2;
-var no_overlap_threshhold = 2;
+var convergence_threshold = 1;
+var impossible_threshold = 1;
+var no_overlap_threshhold = 1;
 
 /*contructor for DAL:*/
 function DAL(){
@@ -37,7 +37,7 @@ function DAL(){
 	this.addContribution = function addContribution(a,b,delta,user){
 		var rel = this.getRelation(a,b);
 		
-		//console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+		console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 		
 		rel.infered = false;
 		if( delta == 'I'){
@@ -49,7 +49,7 @@ function DAL(){
 				rel.add(new Contribution(user,delta));
 				if(rel.impossible > 0) rel.impossible--;
 				this.updateConvergence(a,b);
-				this.clearInference();
+				//this.clearInference();
 			}	
 			this.inferUnknown();		
 		}
@@ -235,7 +235,13 @@ function DAL(){
 				var rel = rels[B];
 				if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
 					var delta = this.search(rel.frm, rel.to);
+
+					
 					if(delta != null){
+						
+						
+						console.log('I - '+rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+						
 						rel.delta = delta;
 						rel.infered = true;
 						rel.impossible = 0;
@@ -363,7 +369,7 @@ function DAL(){
 		////console.log('Candidate ('+rel.count+':'+rel.converged+')');// : '+rel.frm.label+' <-> '+rel.to.label);
 		
 			//Se a relação é marcada como impossivel, passa para a proxima
-			if( !rel.isPossible() || !rel.hasOverlap() ) continue;
+			if( !rel.isPossible() || !rel.hasOverlap() || rel.isInfered()) continue;
 
 			if(rel.isConverged()){
 				if(cc == null){

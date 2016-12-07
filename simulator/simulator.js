@@ -3,7 +3,7 @@ var dal = new d.DAL();
 
 var dalGold = new d.DAL();
 
-var nVideos = 50;
+var nVideos = 10;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -38,9 +38,11 @@ var gold = geraGold(videos);
 
 
 var contr;
-for(contr=0; newContribution() ; contr++);
+var c2;
+//for(contr=0,c2=0; newContribution() ; contr++,c2++);
 
-for(var contr=0; newGoldContribution(users[0]) ; contr++);
+var cg;
+for(var contr=0,cg=0; newGoldContribution(users[0]) ; contr++,cg++);
 
 console.log('#'+process.argv[3]);
 console.log('Crowd Reputation: '+crowdReputation+'%');
@@ -49,11 +51,12 @@ countGold(dalGold);
 
 var slots = (nVideos*nVideos -nVideos)/2;
 
-console.log('Contributions: '+contr);
 console.log('Slots: '+ slots);
+console.log('Gold Contributions: '+cg);
 console.log('Initial Gold Entries: ',nGold);
 console.log('Infered Gold Entries: ',nGoldInfered);
 console.log('Impossible Gold Entries: ',nGoldImpossible);
+console.log('DAL Contributions: '+c2);
 
 
 dal.compareDals(dalGold);
