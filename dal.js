@@ -13,6 +13,9 @@ var convergence_threshold = 3;
 var impossible_threshold = 3;
 var no_overlap_threshhold = 3;
 
+var z=0;
+var zz=0;
+
 /*contructor for DAL:*/
 function DAL(){
 
@@ -152,9 +155,8 @@ function DAL(){
 
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
-
-
-		if(this.it >= this.assets.length){
+		var max = 3;
+		if(this.it >= this.assets.length/max){
 			return null;
 		}		
 
@@ -171,6 +173,7 @@ function DAL(){
 				if(rel.frm == b){
 					dr = -dr
 				}
+				z=this.it;
 				//Zera a altura da arvore de recursão
 				this.it=0;
 				return dr;
@@ -201,7 +204,7 @@ function DAL(){
 				if(r.frm == b){
 					dr = -dr
 				}
-				this.it--;
+				//this.it--;
 				return dr + d;
 			}
 		}
@@ -233,7 +236,9 @@ function DAL(){
 			for(var B in rels){
 				this.it = 0;
 				var rel = rels[B];
-				if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
+				//if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
+				//if( rel.count == 0 && !rel.isInfered() && rel.isPossible()){
+				if( rel.delta == null && rel.isPossible() ){
 					var delta = this.search(rel.frm, rel.to);
 
 					if(delta == null){
@@ -242,12 +247,14 @@ function DAL(){
 					
 					if(delta != null){
 						
+						if(z > zz) zz = z;
 						
-						//console.log('I - '+rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+						//console.log('I ('+z+')- '+rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 						
 						rel.delta = delta;
 						rel.infered = true;
 						rel.impossible = 0;
+
 					}
 				}
 			}		
@@ -334,16 +341,16 @@ function DAL(){
 			}
 			
 		}
-		/*
-		console.log('Total DAL Relations: '+total);
+		
+	/*	console.log('Total DAL Relations: '+total);
 		console.log('Converged True: '+converger_true);
 		console.log('Converged False: '+converger_false);
 		console.log('Infered True: '+infered_true);
 		console.log('Infered False: '+infered_false);
 		console.log('Impossible True: '+impossible_true);
 		console.log('Impossible False: '+impossible_false);
-		*/
-		console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false);
+		console.log('Longest Inference: '+zz);	*/
+		console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.

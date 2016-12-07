@@ -3,7 +3,7 @@ var dal = new d.DAL();
 
 var dalGold = new d.DAL();
 
-var nVideos = 10;
+var nVideos = 50;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -43,16 +43,16 @@ for(var contr=0,cd=0; newContribution() ; contr++,cd++);
 var cg;
 for(var contr=0,cg=0; newGoldContribution(users[0]) ; contr++,cg++);
 
-/*
-console.log('#'+process.argv[3]);
-console.log('Crowd Reputation: '+crowdReputation+'%');
-*/
+
+//console.log('#'+process.argv[3]);
+//console.log('Crowd Reputation: '+crowdReputation+'%');
+
 
 countGold(dalGold);
 
 var slots = (nVideos*nVideos -nVideos)/2;
-/*
-console.log('Slots: '+ slots);
+
+/*console.log('Slots: '+ slots);
 console.log('Gold Contributions: '+cg);
 console.log('Initial Gold Entries: ',nGold);
 console.log('Infered Gold Entries: ',nGoldInfered);
