@@ -3,7 +3,7 @@ var dal = new d.DAL();
 
 var dalGold = new d.DAL();
 
-var nVideos = 10;
+var nVideos = 40;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -37,9 +37,8 @@ var gold = geraGold(videos);
 //printGold(gold);
 
 
-var contr;
-var c2;
-//for(contr=0,c2=0; newContribution() ; contr++,c2++);
+var cd;
+for(var contr=0,cd=0; newContribution() ; contr++,cd++);
 
 var cg;
 for(var contr=0,cg=0; newGoldContribution(users[0]) ; contr++,cg++);
@@ -56,8 +55,9 @@ console.log('Gold Contributions: '+cg);
 console.log('Initial Gold Entries: ',nGold);
 console.log('Infered Gold Entries: ',nGoldInfered);
 console.log('Impossible Gold Entries: ',nGoldImpossible);
-console.log('DAL Contributions: '+c2);
+console.log('DAL Contributions: '+cd);
 
+//dal.inferUnknown();
 
 dal.compareDals(dalGold);
 

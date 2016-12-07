@@ -9,9 +9,9 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 1;
-var impossible_threshold = 1;
-var no_overlap_threshhold = 1;
+var convergence_threshold = 3;
+var impossible_threshold = 3;
+var no_overlap_threshhold = 3;
 
 /*contructor for DAL:*/
 function DAL(){
@@ -37,7 +37,7 @@ function DAL(){
 	this.addContribution = function addContribution(a,b,delta,user){
 		var rel = this.getRelation(a,b);
 		
-		console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+		//console.log(rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 		
 		rel.infered = false;
 		if( delta == 'I'){
@@ -228,7 +228,7 @@ function DAL(){
 
 	/*Function to infer the unknown Deltas between A and B using a Depth-First Search.*/
 	this.inferUnknown = function inferUnknown(){
-		for(var A =0; A < this.assets.length-1; A++){
+		for(var A = 0; A < this.assets.length-1; A++){
 			var rels = this.assets[A].relations;
 			for(var B in rels){
 				this.it = 0;
@@ -236,11 +236,14 @@ function DAL(){
 				if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
 					var delta = this.search(rel.frm, rel.to);
 
+					if(delta == null){
+						delta = this.searchBackPath(rel.frm, rel.to);
+					}
 					
 					if(delta != null){
 						
 						
-						console.log('I - '+rel.frm.label+' <-('+delta+')-> '+rel.to.label);
+						//console.log('I - '+rel.frm.label+' <-('+delta+')-> '+rel.to.label);
 						
 						rel.delta = delta;
 						rel.infered = true;
@@ -251,6 +254,21 @@ function DAL(){
 		}
 		return false;
 	}
+
+	this.searchBackPath = function searchBackPath(a,b){
+				for(var A = 0; A < this.assets.indexOf(a); A++){
+					var d1 = this.search(this.assets[A],a);
+					if(d1 == null) continue;
+					
+					var d2 = this.search(this.assets[A],b);
+					if(d2 == null) continue;
+				
+					return d2 - d1;
+					
+				}
+				return null;
+	}
+
 
 	/*Function to show on console all relations.*/
 	this.print = function print(){
@@ -271,7 +289,8 @@ function DAL(){
 	var converger_false=0
 	var infered_true=0;
 	var infered_false=0;
-	var impossible=0;
+	var impossible_true=0;
+	var impossible_false=0;
 	var total=0;
 
 	this.compareDals = function compareDals(gold){
@@ -303,7 +322,11 @@ function DAL(){
 						}
 					}else{
 						if(!rd.isPossible() || !rd.hasOverlap()){
-							impossible++;
+							if(rg.delta == null){
+								impossible_true++;
+							}else{
+								impossible_false++;
+							}
 						}
 					}
 				}
@@ -313,11 +336,12 @@ function DAL(){
 		}
 		
 		console.log('Total DAL Relations: '+total);
-		console.log('Converged Certo: '+converger_true);
+		console.log('Converged True: '+converger_true);
 		console.log('Converged False: '+converger_false);
-		console.log('Infered Certo: '+infered_true);
-		console.log('Infered Errado: '+infered_false);
-		console.log('Impossible: '+impossible);
+		console.log('Infered True: '+infered_true);
+		console.log('Infered False: '+infered_false);
+		console.log('Impossible True: '+impossible_true);
+		console.log('Impossible False: '+impossible_false);
 		
 	}
 
