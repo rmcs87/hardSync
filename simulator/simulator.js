@@ -1,6 +1,8 @@
 var d = require("../dal.js");
 var dal = new d.DAL();
 
+var dalGold = new d.DAL();
+
 var nVideos = 80;
 
 //Timeline de 10 minutos
@@ -25,26 +27,36 @@ users[3] = new d.User('faux-user-004', 10);
 var videos = loadVideos(nVideos);
 //for(var video in videos) videos[video].print();
 
-var nGold = 0;
+var nGold=0;
+var nGoldInfered=0;
+var nGoldImpossible=0;
 var gold = geraGold(videos);
+
 //console.log(JSON.stringify(gold));
 //console.log('Gold');
 //printGold(gold);
 
+
 var contr;
 for(contr=0; newContribution() ; contr++);
+
+for(var contr=0; newGoldContribution(users[0]) ; contr++);
 
 console.log('#'+process.argv[3]);
 console.log('Crowd Reputation: '+crowdReputation+'%');
 
-dal.compare(gold);
+countGold(dalGold);
+
+var slots = (nVideos*nVideos -nVideos)/2;
 
 console.log('Contributions: '+contr);
-console.log('Valid Gold Entries: ',nGold);
+console.log('Slots: '+ slots);
+console.log('Initial Gold Entries: ',nGold);
+console.log('Infered Gold Entries: ',nGoldInfered);
+console.log('Impossible Gold Entries: ',nGoldImpossible);
 
-//dal.print();
 
-
+dal.compareDals(dalGold);
 
 ///FUNCOES
 
@@ -56,18 +68,40 @@ function printGold(gold) {
     }
 }
 
+function countGold(dalGold){
+    
+    var x=0;
+	for(var A = 0; A < dalGold.assets.length-1; A++){
+		for(var R in dalGold.assets[A].relations){
+        x++;
+            var delta = dalGold.assets[A].relations[R].delta;
+            //console.log(dalGold.assets[A].relations[R].frm.label + ' <- ('+ delta +' ) ->' +dalGold.assets[A].relations[R].to.label);
+		    if(delta == 'I' || delta =='N' || delta == null){
+		        nGoldImpossible++;
+		    }else{
+		        if(dalGold.assets[A].relations[R].isInfered()){
+		            nGoldInfered++;
+		        }else{
+		            nGold++;
+		        }
+		    }
+        }
+    }
+    //console.log(x);
+}
+
 function geraGold(videos){
     var gold = new Array();
     for(var A in videos){
         gold[A] = new Array();
         for(var B in videos){
-		var delta = getDelta(videos[A],videos[B]);
-		if(delta != 'I' && delta !='N' && A != B) nGold++;
-            	gold[A][B] = delta;
+		    var delta = getDelta(videos[A],videos[B]);
+		    //if(delta != 'I' && delta !='N' && A != B) nGold++;
+            gold[A][B] = delta;
         }
     }
 
-    nGold = nGold/2 ;
+    //nGold = nGold/2 ;
 
     return gold;
 }
@@ -89,9 +123,10 @@ function getDelta(A,B){
 
 function newContribution(){
 	var userClass = Math.random() * 1000 % 100;
-    	var userSubClass = Math.floor(Math.random() * 1000 % 2);
+    var userSubClass = Math.floor(Math.random() * 1000 % 2);
 	var userId;
 	var user;
+	var id;
 
     	var chance = Math.random() * 1000 % 100;
 
@@ -116,8 +151,21 @@ function newContribution(){
 	if(chance < user.lvl){
         	return newValidContribution(user);
     	}else{
+        	//return newValidContribution(user);
         	return newRandomContribution(user);
     	}
+}
+
+function newGoldContribution(user){
+    var pair = dalGold.chooseNextPair(user.id);
+
+    if(pair == null) return false;
+
+    var delta =  gold[pair.frm.label][pair.to.label];
+
+    dalGold.addContribution(pair.frm, pair.to,delta,user);
+
+    return true;
 }
 
 function newValidContribution(user){
@@ -125,7 +173,7 @@ function newValidContribution(user){
 
     if(pair == null) return false;
 
-    var delta =  getDelta(videos[pair.frm.label], videos[pair.to.label]);
+    var delta = gold[pair.frm.label][pair.to.label];
 
     dal.addContribution(pair.frm, pair.to,delta,user);
 
@@ -172,12 +220,12 @@ function loadVideos(number){
     
 	for(var i=0; i<number; i++){
        	 	var video = new Video(parseFloat(vetVideos[i].start),parseFloat(vetVideos[i].duration),vetVideos[i].label,vetVideos[i].uri);
-        	var v = new d.Asset(vetVideos[i].uri, vetVideos[i].label, parseFloat(vetVideos[i].duration));
-		dal.addAsset(v);
+		    dal.addAsset(new d.Asset(vetVideos[i].uri, vetVideos[i].label, parseFloat(vetVideos[i].duration)));
+		    dalGold.addAsset(new d.Asset(vetVideos[i].uri, vetVideos[i].label, parseFloat(vetVideos[i].duration)));
         	videos[video.getLabel()] = video;
-    	}
+    }
 
-    	return videos;
+	return videos;
 }
 
 

@@ -154,7 +154,7 @@ function DAL(){
 	this.search = function search(a,b){
 
 
-		if(this.it > this.assets.length){
+		if(this.it >= this.assets.length){
 			return null;
 		}		
 
@@ -163,8 +163,8 @@ function DAL(){
 	
 		//Caso exista esta relação direta
 		if(rel.delta != null){
-			//Se o for beco sem saida, faz o rollback	
-			if(!rel.isPossible()){
+			//Se o for beco sem saida, faz o rollback, ou nao é confiavel ainda	
+			if(!rel.isPossible() || !rel.isConverged()){
 				return null;
 			}else{
 				var dr = rel.delta;
@@ -187,15 +187,15 @@ function DAL(){
 		for(var i=0; i < rels.length; i++){
 			var r = rels[i];
 
-			if(r.delta == null || !r.isPossible()){
+			if(r.delta == null || r.delta == 'I' || r.delta == 'N' || !r.isPossible() || !r.isConverged()){
 				continue;
 			}
 
 			var d = this.search(r.to,b);
-			if(d == null) continue;
+			if(d == null || d == 'I' || d == 'N') continue;
 			
 			
-			if(this.it > this.assets.length || d){
+			if(this.it < this.assets.length){
 				//Verifica o "sentido" do delta;
 				dr = r.delta;
 				if(r.frm == b){
@@ -205,6 +205,7 @@ function DAL(){
 				return dr + d;
 			}
 		}
+		
 		return null;
 	}
 
@@ -225,12 +226,9 @@ function DAL(){
 
 
 
-	/*Function to infer the unknown Deltas.*/
-	//Procura transitividade entre A e B recursivamente
+	/*Function to infer the unknown Deltas between A and B using a Depth-First Search.*/
 	this.inferUnknown = function inferUnknown(){
-
-		//Percorre os Assets e tenta inferir as lacunas
-		for(var A in this.assets){
+		for(var A =0; A < this.assets.length-1; A++){
 			var rels = this.assets[A].relations;
 			for(var B in rels){
 				this.it = 0;
@@ -263,44 +261,58 @@ function DAL(){
 	}
 	
 
-	/* Compare a converger DAL with a Gold Matrix */
-	this.compare = function compare(gold){
-		var error=0,total=0, infered=0, impossible=0, ok=0;
-		for(var A in this.assets){
-			for(var B in this.assets[A].relations){
-				total++;
-				var rel = this.assets[A].relations[B];
-				
-				var g =  gold[rel.frm.label][rel.to.label];
+	var converger_true=0;
+	var converger_false=0
+	var infered_true=0;
+	var infered_false=0;
+	var impossible=0;
+	var total=0;
 
-				if(rel.isInfered()) infered++;
+	this.compareDals = function compareDals(gold){
+
+
+		//for(var A in gold.assets){
+		for(var A = 0; A < gold.assets.length-1; A++){
+			for(var R in gold.assets[A].relations){
+				var rg = gold.assets[A].relations[R];
+				var rd = this.assets[A].relations[R];
 				
-				if(!rel.isPossible()){
-					impossible++;
+				total++;
+				
+				
+				if(rd.isConverged()){
+					if(rd.delta == rg.delta){
+						converger_true++;
+					}else{
+						converger_false++;
+				//console.log('C: '+rg.frm.label + ' <- ('+rg.delta+','+rd.delta+') -> '+rg.to.label+' , Converged: '+rd.isConverged()+' , Possible: '+rd.isPossible()+' , Infered: '+rd.isInfered()+ ' Has Overlap: '+rd.hasOverlap());
+					}
 				}else{
-					if(rel.delta != g && rel.isConverged()){
-						if(g != 'I' || rel.isPossible){
-							error++;
+					if(rd.isInfered()){
+						if(rd.delta == rg.delta){
+							infered_true++;	
+						}else{
+							infered_false++;
+				//console.log('I: '+rg.frm.label + ' <- ('+rg.delta+','+rd.delta+') -> '+rg.to.label+' , Converged: '+rd.isConverged()+' , Possible: '+rd.isPossible()+' , Infered: '+rd.isInfered()+ ' Has Overlap: '+rd.hasOverlap());
 						}
 					}else{
-						if(rel.isConverged() || (rel.isInfered())){
-							ok++;
-						/*	console.log('Converged: '+rel.isConverged());
-							console.log('Infered: '+rel.isInfered());
-							console.log('Possible: '+rel.isPossible());
-							console.log('Has Overlap: '+rel.hasOverlap());
-							console.log(rel.frm.label+'<->'+rel.to.label);
-							console.log('DAL  : '+rel.delta);
-							console.log('GOLD : '+gold[rel.frm.label][rel.to.label]+'\n');*/
+						if(!rd.isPossible() || !rd.hasOverlap()){
+							impossible++;
 						}
 					}
 				}
+				
 			}
+			
 		}
-		console.log('Error: '+error+' / '+total);
-		console.log('Impossible: '+impossible+' / '+total);
-		console.log('OK: '+ok+' / '+total);
-		console.log('Infereds: '+infered+' / '+total);
+		
+		console.log('Total DAL Relations: '+total);
+		console.log('Converged Certo: '+converger_true);
+		console.log('Converged False: '+converger_false);
+		console.log('Infered Certo: '+infered_true);
+		console.log('Infered Errado: '+infered_false);
+		console.log('Impossible: '+impossible);
+		
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
@@ -393,9 +405,9 @@ function DAL(){
 		var candidates = new Array();
 		for(var a=0; a<l; a++){
 			var v = this.assets[a];
-			nc = !v.isConverged();
-			p = v.isPossible();
-			o = v.hasOverlap();
+			var nc = !v.isConverged();
+			var p = v.isPossible();
+			var o = v.hasOverlap();
 			if(nc && p && o){
 				candidates.push(a);
 			}
