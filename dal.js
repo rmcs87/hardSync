@@ -334,7 +334,7 @@ function DAL(){
 			}
 			
 		}
-		
+		/*
 		console.log('Total DAL Relations: '+total);
 		console.log('Converged True: '+converger_true);
 		console.log('Converged False: '+converger_false);
@@ -342,7 +342,8 @@ function DAL(){
 		console.log('Infered False: '+infered_false);
 		console.log('Impossible True: '+impossible_true);
 		console.log('Impossible False: '+impossible_false);
-		
+		*/
+		console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false);
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
