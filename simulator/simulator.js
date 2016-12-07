@@ -3,7 +3,7 @@ var dal = new d.DAL();
 
 var dalGold = new d.DAL();
 
-var nVideos = 80;
+var nVideos = 50;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline

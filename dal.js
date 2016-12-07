@@ -162,9 +162,9 @@ function DAL(){
 		var rel = this.getRelation(a,b);
 	
 		//Caso exista esta relação direta
-		if(rel.delta != null){
+		if(rel.delta != null && rel.isConverged()){
 			//Se o for beco sem saida, faz o rollback, ou nao é confiavel ainda	
-			if(!rel.isPossible() || !rel.isConverged()){
+			if(!rel.isPossible()){
 				return null;
 			}else{
 				var dr = rel.delta;
