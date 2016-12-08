@@ -3,7 +3,7 @@ var dal = new d.DAL();
 
 var dalGold = new d.DAL();
 
-var nVideos = 50;
+var nVideos = 80;
 
 //Timeline de 10 minutos
 var start = 0;//Segundo inicial da timeline
@@ -61,7 +61,7 @@ console.log('DAL Contributions: '+cd);
 */
 
 //dal.inferUnknown();
-
+console.log(cd+';');
 dal.compareDals(dalGold);
 
 ///FUNCOES
