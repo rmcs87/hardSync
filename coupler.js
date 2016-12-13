@@ -21,10 +21,15 @@ var sockets = [];
 var dal = new d.DAL();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2; ([6/7]  3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
-        {dur: 30, chunks:6, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b01.webm"},
-        {dur: 35, chunks:7, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b02.webm"},
-        {dur: 30, chunks:6, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b03.webm"},
-        {dur: 35, chunks:7, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04_", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/b04.webm"}      
+        {dur: 245, chunks:49, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01.webm"},
+        {dur: 135, chunks:27, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/02/02", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/02/02.webm"},
+        {dur: 230, chunks:46, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/03/03", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/03/03.webm"},
+        {dur: 140, chunks:28, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/04/04", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/04/04.webm"},
+        {dur: 330, chunks:66, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/05/05", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/05/05.webm"},
+        {dur: 98, chunks:19, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/06/06", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/06/06.webm"},
+        {dur: 35, chunks:7, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/07/07", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/07/07.webm"},
+        {dur: 105, chunks:21, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/08/08", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/08/08.webm"},
+        {dur: 80, chunks:16, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/09/09", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/09/09.webm"}
       ];        
 var vChunks = new Array(); //random order of chunks in Videos
 var scores = {};          //Lista com a pontuação dos participantes;
@@ -36,7 +41,8 @@ var vi = 0;
 var vj = 1;
 
 //Initialize DAL:
-for(var i=0; i<videos.length; i++){
+//for(var i=0; i<videos.length; i++){
+for(var i=0; i<2; i++){
   dal.addAsset(new d.Asset(videos[i].full_url,videos[i].label,videos[i].dur));
   vChunks[i] = new Array(videos[i].chunks +1);
   for(var c=0; c <= videos[i].chunks; c++){
@@ -128,13 +134,6 @@ io.on('connection', function (socket) {
               } 
           }
       }
-      
-
-
-      
-
-
-
 
       socket.send( JSON.stringify(dal.getPresentation()) );
 

@@ -9,9 +9,9 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 3;
-var impossible_threshold = 3;
-var no_overlap_threshhold = 3;
+var convergence_threshold = 1;
+var impossible_threshold = 1;
+var no_overlap_threshhold = 1;
 
 var z=0;
 var zz=0;

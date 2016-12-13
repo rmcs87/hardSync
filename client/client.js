@@ -15,7 +15,7 @@ function init(){
         this.user_id = result;
     });
     //Coupler IP;
-    socket = io('wss://hardsync-novaes.c9users.io/');
+    socket = io('wss://hard-sync-rmcs87.c9users.io/');
     //Se a conexão for perdida:
     socket.on("disconnect", coupler_close);
     //Ao receber uma mensagem:
@@ -58,8 +58,8 @@ function coupler_message(e){
 
 function loadVideos(){
   //Cria os dois videos e dá o play;  
-  player1.element = new Video({'vidId': 'v1', 'src': player1.url +"0"+player1.chunk +".webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
-  player2.element = new Video({'vidId': 'v2', 'src': player2.url +"0"+player2.chunk +".webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
+  player1.element = new Video({'vidId': 'v1', 'src': player1.url + "("+player1.chunk +").webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
+  player2.element = new Video({'vidId': 'v2', 'src': player2.url + "("+player2.chunk +").webm",'width': 300, 'heigth': 300,'autoplay': 1,'loop': 1,'controls': 0});
 
   //Start contribution;
   player1.element.load();
