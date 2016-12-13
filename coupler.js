@@ -21,7 +21,7 @@ var sockets = [];
 var dal = new d.DAL();
 //Variaveis da aplicação
 var videos = [   //videos 1 and 2; ([6/7]  3 and 4 = 1 and 2 - para testar o getNextPair quando acabar os chunks)
-        {dur: 245, chunks:49, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01.webm"},
+        {dur: 240, chunks:48, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/01/01.webm"},
         {dur: 135, chunks:27, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/02/02", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/02/02.webm"},
         {dur: 230, chunks:46, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/03/03", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/03/03.webm"},
         {dur: 140, chunks:28, label:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/04/04", chunk:1, full_url:"https://dl.dropboxusercontent.com/u/13768488/hardSync/climb/04/04.webm"},
