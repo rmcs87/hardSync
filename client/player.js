@@ -13,7 +13,8 @@ function showMsg(id,msg){
 function init(){
   //Conecta ao Coupler;
   //ws = new WebSocket( 'ws://10.9.7.127:4080' );
-  socket = io('wss://hard-sync-rmcs87.c9users.io/');
+  //socket = io('wss://hard-sync-rmcs87.c9users.io/');
+  socket = io('wss://hardsync-novaes.c9users.io/');
   //Se a conexão for perdida:
   //Se a conexão for perdida:
   socket.on("disconnect", coupler_close);

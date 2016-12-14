@@ -37,12 +37,15 @@ var scores = {};          //Lista com a pontuação dos participantes;
 //var confirm = [];        //lista que aguarda confirmação;
 //var done = false;        //saber se já encontrou todas as relações;
 //var count = 0;
+
+var nextVideoToAdd=2;
+
 var vi = 0;
 var vj = 1;
 
 //Initialize DAL:
 //for(var i=0; i<videos.length; i++){
-for(var i=0; i<2; i++){
+/*for(var i=0; i<2; i++){
   dal.addAsset(new d.Asset(videos[i].full_url,videos[i].label,videos[i].dur));
   vChunks[i] = new Array(videos[i].chunks +1);
   for(var c=0; c <= videos[i].chunks; c++){
@@ -50,7 +53,11 @@ for(var i=0; i<2; i++){
   }
   shuffle(vChunks[i]);
   console.log(vChunks[i]);
-}
+}*/
+
+//Add Initial Pair of Videos
+addVideo(videos,0);
+addVideo(videos,1);
 
 //Escolhendo  par inicial de videos
 var next = dal.chooseNextPair();
@@ -115,13 +122,20 @@ io.on('connection', function (socket) {
                 console.log('New Videos');
                 var next = dal.chooseNextPair(obj.user_id);
                 if(next == null){
-                  socket.send(JSON.stringify( {act:"end"} ));
-                }else{
-                  vi = getVideoIndex(next.frm.label);
-                  vj = getVideoIndex(next.to.label);
-                  videos[vi].chunk = 1;    
-                  videos[vj].chunk = 1;
+                    if(nextVideoToAdd < videos.length){
+                      addVideo(videos,nextVideoToAdd);
+                      next = dal.chooseNextPair(obj.user_id);
+                      nextVideoToAdd++;
+                    }else{
+                      socket.send(JSON.stringify( {act:"end"} ));
+                      break;
+                    }
                 }
+                vi = getVideoIndex(next.frm.label);
+                vj = getVideoIndex(next.to.label);
+                videos[vi].chunk = 1;    
+                videos[vj].chunk = 1;
+                
               }else{
                 console.log('New Chunks');
                 addScore(obj.user_id,10);
@@ -184,5 +198,15 @@ function shuffle(array) {
   }
 
   return array;
+}
+
+function addVideo(videos, i){
+    dal.addAsset(new d.Asset(videos[i].full_url,videos[i].label,videos[i].dur));
+    vChunks[i] = new Array(videos[i].chunks +1);
+    for(var c=0; c <= videos[i].chunks; c++){
+      vChunks[i][c] = c;
+    }
+    shuffle(vChunks[i]);
+    console.log(vChunks[i]);
 }
 
