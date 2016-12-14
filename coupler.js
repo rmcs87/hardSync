@@ -120,10 +120,17 @@ io.on('connection', function (socket) {
                 dal.addContribution(dal.getAsset(videos[vi].label), dal.getAsset(videos[vj].label), delta, obj.user_id);
                   
                 console.log('New Videos');
+                      dal.print();
+                dal.inferUnknown();
+                      dal.print();
                 var next = dal.chooseNextPair(obj.user_id);
+                
+                
+                
                 if(next == null){
                     if(nextVideoToAdd < videos.length){
                       addVideo(videos,nextVideoToAdd);
+                      dal.inferUnknown();
                       next = dal.chooseNextPair(obj.user_id);
                       nextVideoToAdd++;
                     }else{
@@ -207,6 +214,6 @@ function addVideo(videos, i){
       vChunks[i][c] = c;
     }
     shuffle(vChunks[i]);
-    console.log(vChunks[i]);
+    //console.log(vChunks[i]);
 }
 

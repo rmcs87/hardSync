@@ -155,8 +155,7 @@ function DAL(){
 
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
-		var max = 3;
-		if(this.it >= this.assets.length/max){
+		if(this.it > 15){ 
 			return null;
 		}		
 
@@ -229,21 +228,25 @@ function DAL(){
 
 
 
+
 	/*Function to infer the unknown Deltas between A and B using a Depth-First Search.*/
 	this.inferUnknown = function inferUnknown(){
-		for(var A = 0; A < this.assets.length-1; A++){
+		for(var A = 0; A < this.assets.length; A++){
+			
 			var rels = this.assets[A].relations;
-			for(var B in rels){
+			for(var B = 0; B < rels.length; B++){
 				this.it = 0;
 				var rel = rels[B];
 				//if( (rel.count == 0 || rel.isInfered()) && rel.isPossible()){
 				//if( rel.count == 0 && !rel.isInfered() && rel.isPossible()){
 				if( rel.delta == null && rel.isPossible() ){
+					
 					var delta = this.search(rel.frm, rel.to);
 
 					if(delta == null){
 						delta = this.searchBackPath(rel.frm, rel.to);
 					}
+					
 					
 					if(delta != null){
 						
@@ -264,12 +267,14 @@ function DAL(){
 
 	this.searchBackPath = function searchBackPath(a,b){
 				for(var A = 0; A < this.assets.indexOf(a); A++){
+					
 					var d1 = this.search(this.assets[A],a);
 					if(d1 == null) continue;
+
 					
 					var d2 = this.search(this.assets[A],b);
 					if(d2 == null) continue;
-				
+					
 					return d2 - d1;
 					
 				}
@@ -280,6 +285,7 @@ function DAL(){
 	/*Function to show on console all relations.*/
 	this.print = function print(){
 		for(var A in this.assets){
+			
 			for(var B in this.assets[A].relations){
 				var rel = this.assets[A].relations[B];
 				console.log('Converged: '+rel.isConverged());
