@@ -465,7 +465,7 @@ function DAL(){
 			a = Math.floor(Math.random() * l);
 			//console.log('Choosen: '+candidates[a]);
 
-			a=0;//Comentar esta linha para habilitar a escolha aleatoria do Asset
+			//a=0;//Comentar esta linha para habilitar a escolha aleatoria do Asset
 
 			return this.assets[candidates[a]];
 		}
