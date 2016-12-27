@@ -9,9 +9,9 @@
 var ss = require("./simple-statistics.min.js");
 
 //Defines
-var convergence_threshold = 1;
-var impossible_threshold = 1;
-var no_overlap_threshhold = 1;
+var convergence_threshold = 3;
+var impossible_threshold = 3;
+var no_overlap_threshhold = 3;
 
 var z=0;
 var zz=0;
@@ -348,15 +348,15 @@ function DAL(){
 			
 		}
 		
-	/*	console.log('Total DAL Relations: '+total);
+		console.log('Total DAL Relations: '+total);
 		console.log('Converged True: '+converger_true);
 		console.log('Converged False: '+converger_false);
 		console.log('Infered True: '+infered_true);
 		console.log('Infered False: '+infered_false);
 		console.log('Impossible True: '+impossible_true);
 		console.log('Impossible False: '+impossible_false);
-		console.log('Longest Inference: '+zz);	*/
-		console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
+		console.log('Longest Inference: '+zz);	
+		//console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
