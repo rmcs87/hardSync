@@ -356,15 +356,7 @@ function DAL(){
 		console.log('Impossible True: '+impossible_true);
 		console.log('Impossible False: '+impossible_false);
 		console.log('Longest Inference: '+zz);	
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-	//	console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
-=======
-		//console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
->>>>>>> f9e69be7283aee0b4abd0964e2ae6f6db7fa8130
->>>>>>> 7b627453da7023cacaec91852dafd7e5db69443b
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
