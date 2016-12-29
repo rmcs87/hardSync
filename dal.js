@@ -155,7 +155,7 @@ function DAL(){
 
 	//Funcao recursiva que procura o caminho pelo principio da transitividade
 	this.search = function search(a,b){
-		if(this.it > 15){ 
+		if(this.it >= this.assets.length){ 
 			return null;
 		}		
 
@@ -319,7 +319,7 @@ function DAL(){
 				
 				
 				if(rd.isConverged()){
-					if(rd.delta == rg.delta){
+					if(Math.ceil(10*rd.delta) == Math.ceil(10*rg.delta)){
 						converger_true++;
 					}else{
 						converger_false++;
@@ -327,7 +327,7 @@ function DAL(){
 					}
 				}else{
 					if(rd.isInfered()){
-						if(rd.delta == rg.delta){
+						if(Math.ceil(10*rd.delta) == Math.ceil(10*rg.delta)){
 							infered_true++;	
 						}else{
 							infered_false++;
@@ -356,7 +356,7 @@ function DAL(){
 		console.log('Impossible True: '+impossible_true);
 		console.log('Impossible False: '+impossible_false);
 		console.log('Longest Inference: '+zz);	
-		//console.log(total+','+converger_true+','+converger_false+','+infered_true+','+infered_false+','+impossible_true+','+impossible_false+','+zz);
+
 	}
 
 	/*Function that returns an object with all info necessary to play the assets.
