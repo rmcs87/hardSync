@@ -43,6 +43,8 @@ var nextVideoToAdd=2;
 var vi = 0;
 var vj = 1;
 
+
+
 //Initialize DAL:
 //for(var i=0; i<videos.length; i++){
 /*for(var i=0; i<2; i++){
@@ -58,6 +60,13 @@ var vj = 1;
 //Add Initial Pair of Videos
 addVideo(videos,0);
 addVideo(videos,1);
+addVideo(videos,2);
+addVideo(videos,3);
+addVideo(videos,4);
+addVideo(videos,5);
+addVideo(videos,6);
+addVideo(videos,7);
+addVideo(videos,8);
 
 //Escolhendo  par inicial de videos
 var next = dal.chooseNextPair();
@@ -65,6 +74,18 @@ vi = getVideoIndex(next.frm.label);
 vj = getVideoIndex(next.to.label);
 videos[vi].chunk = 1;    
 videos[vj].chunk = 1;
+
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[1].label), 95.2, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[2].label), 99, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[3].label), 116, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[4].label), 141, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[5].label), 191, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[6].label), 202, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[7].label), 227, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[8].label), 230, 'teste-user');
+dal.addContribution(dal.getAsset(videos[7].label), dal.getAsset(videos[8].label), 3, 'teste-user');
+
+
 
 //Ao conectar;
 io.on('connection', function (socket) {
@@ -213,3 +234,35 @@ function addVideo(videos, i){
     //console.log(vChunks[i]);
 }
 
+function test(){
+
+addVideo(videos,2);
+addVideo(videos,3);
+addVideo(videos,4);
+addVideo(videos,5);
+addVideo(videos,6);
+addVideo(videos,7);
+addVideo(videos,8);
+
+
+/*TESTE COM OS 7 VIDEOS COM ERRO HUMANO
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[1].label), 94.8, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[2].label), 101, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[3].label), 115, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[4].label), 140, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[5].label), 193, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[6].label), 206, 'teste-user');
+*/
+
+//TESTE COM OS 9 VIDEOS SINCRONIZADOS OK
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[1].label), 95.2, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[2].label), 99, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[3].label), 116, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[4].label), 141, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[5].label), 191, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[6].label), 202, 'teste-user');
+dal.addContribution(dal.getAsset(videos[0].label), dal.getAsset(videos[7].label), 227, 'teste-user');
+dal.addContribution(dal.getAsset(videos[7].label), dal.getAsset(videos[8].label), 3, 'teste-user');
+
+
+}
